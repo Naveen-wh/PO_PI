@@ -1,0 +1,11 @@
+{
+  "projectId": "aol-dr-dev",
+  "appId": "1:58654842690:web:568e7785d996b9eab9f2db",
+  "apiKey": "AIzaSyBbVZPh_x3h12_-zgeBengSHSRuMKv1NiY",
+  "authDomain": "aol-dr-dev.firebaseapp.com",
+  "storageBucket": "aol-dr-dev.firebasestorage.app",
+  "messagingSenderId": "58654842690",
+  "measurementId": "",
+  "oAuthClientId": "58654842690-jbhsej8m644rsp5n1cq30ahpteaahbs9.apps.googleusercontent.com",
+  "firestoreDatabaseId": "aoldr"
+}

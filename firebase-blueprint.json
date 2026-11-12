@@ -1,0 +1,307 @@
+{
+  "collections": {
+    "users": {
+      "description": "Organizational tree nodes representing team members and reporting structures mapped uniquely by their email address.",
+      "fields": {
+        "id": "string",
+        "name": "string",
+        "role": "string",
+        "accessLevel": "string",
+        "email": "string",
+        "phone": "string (optional)",
+        "teamName": "string",
+        "targetQuota": "number",
+        "reportsTo": "string (optional)",
+        "status": "string (optional)",
+        "requestedAt": "string (optional)"
+      }
+    },
+    "workflows": {
+      "description": "Organizational project pipelines hosting child deal structures.",
+      "fields": {
+        "id": "string",
+        "name": "string",
+        "description": "string",
+        "status": "string",
+        "clientName": "string",
+        "leadsCount": "number"
+      }
+    },
+    "tasks": {
+      "description": "Delegated subtask activities mapped to particular projects and individual users.",
+      "fields": {
+        "id": "string",
+        "title": "string",
+        "description": "string",
+        "dueDate": "string",
+        "priority": "string",
+        "status": "string",
+        "assignedToUserId": "string",
+        "createdByUserId": "string",
+        "projectId": "string",
+        "leadId": "string (optional)"
+      }
+    },
+    "tabSettings": {
+      "description": "Team-level tab visibility permissions managed by administrators.",
+      "fields": {
+        "id": "string",
+        "teamName": "string",
+        "visibleTabs": "array"
+      }
+    },
+    "clients": {
+      "description": "Client details for Client Management and dropdown integration.",
+      "fields": {
+        "id": "string",
+        "fullName": "string",
+        "companyName": "string",
+        "email": "string",
+        "phone": "string",
+        "gst": "string",
+        "city": "string",
+        "pincode": "string",
+        "address": "string",
+        "createdAt": "string",
+        "teamName": "string (optional)"
+      }
+    },
+    "teams": {
+      "description": "Teams definitions containing team names, descriptions, and creation details.",
+      "fields": {
+        "id": "string",
+        "name": "string",
+        "description": "string (optional)",
+        "createdAt": "string"
+      }
+    },
+    "products": {
+      "description": "Master products list across categories and manufacturers.",
+      "fields": {
+        "id": "string",
+        "name": "string",
+        "category": "string",
+        "group": "string",
+        "manufacturer": "string",
+        "teamName": "string (optional)",
+        "createdAt": "string",
+        "createdByUserId": "string (optional)"
+      }
+    },
+    "purchase_orders": {
+      "description": "Purchase Orders (PO) records.",
+      "fields": {
+        "id": "string",
+        "createdAt": "string",
+        "poDate": "string",
+        "poNumber": "string",
+        "supplierName": "string",
+        "supplierGstin": "string (optional)",
+        "supplierAddress": "string (optional)",
+        "createEditDate": "string",
+        "cpName": "string (optional)",
+        "cpNumber": "string (optional)",
+        "cpEmailId": "string (optional)",
+        "deliveryLocation": "string (optional)",
+        "billingLocation": "string (optional)",
+        "shipToAddress": "string (optional)",
+        "billToAddress": "string (optional)",
+        "shipToGst": "string (optional)",
+        "billToGst": "string (optional)",
+        "preparedBy": "string (optional)",
+        "checkedBy": "string (optional)",
+        "spName": "string (optional)",
+        "spPhoneNumber": "string (optional)",
+        "spEmailId": "string (optional)",
+        "paymentTerms": "string (optional)",
+        "deliveryTerms": "string (optional)",
+        "otherTerms": "string (optional)",
+        "currency": "string",
+        "subTotal": "number",
+        "gst": "number",
+        "totalInNum": "number",
+        "totalInWord": "string",
+        "productDescription1": "string",
+        "packingKgs1": "string (optional)",
+        "packs1": "number (optional)",
+        "totalQty1": "number",
+        "rate1": "number",
+        "amount1": "number",
+        "productDescription2": "string (optional)",
+        "packingKgs2": "string (optional)",
+        "packs2": "number (optional)",
+        "totalQty2": "number (optional)",
+        "rate2": "number (optional)",
+        "amount2": "number (optional)",
+        "productDescription3": "string (optional)",
+        "packingKgs3": "string (optional)",
+        "packs3": "number (optional)",
+        "totalQty3": "number (optional)",
+        "rate3": "number (optional)",
+        "amount3": "number (optional)",
+        "productDescription4": "string (optional)",
+        "packingKgs4": "string (optional)",
+        "packs4": "number (optional)",
+        "totalQty4": "number (optional)",
+        "rate4": "number (optional)",
+        "amount4": "number (optional)",
+        "productDescription5": "string (optional)",
+        "packingKgs5": "string (optional)",
+        "packs5": "number (optional)",
+        "totalQty5": "number (optional)",
+        "rate5": "number (optional)",
+        "amount5": "number (optional)",
+        "productDescription6": "string (optional)",
+        "packingKgs6": "string (optional)",
+        "packs6": "number (optional)",
+        "totalQty6": "number (optional)",
+        "rate6": "number (optional)",
+        "amount6": "number (optional)",
+        "productDescription7": "string (optional)",
+        "packingKgs7": "string (optional)",
+        "packs7": "number (optional)",
+        "totalQty7": "number (optional)",
+        "rate7": "number (optional)",
+        "amount7": "number (optional)",
+        "createdBy": "string",
+        "editBy": "string (optional)",
+        "editTimestamp": "string (optional)",
+        "createdByUserId": "string (optional)",
+        "poPdfUrl": "string (optional)",
+        "PDF File URLs": "string (optional)"
+      }
+    },
+    "expense_ledgers": {
+      "description": "Expense Ledger heads master.",
+      "fields": {
+        "id": "string",
+        "createdAt": "string",
+        "createdByUserId": "string (optional)",
+        "createdByName": "string (optional)",
+        "expenseSubHead": "string",
+        "expenseHead": "string",
+        "directIndirect": "string",
+        "ledgerBranchLocation": "string",
+        "expenseIncomeType": "string",
+        "ecomExpense": "string"
+      }
+    },
+    "other_income_ledgers": {
+      "description": "Other Income Ledger heads master.",
+      "fields": {
+        "id": "string",
+        "createdAt": "string",
+        "createdByUserId": "string (optional)",
+        "createdByName": "string (optional)",
+        "ledger": "string",
+        "effect": "string"
+      }
+    },
+    "aol_branches": {
+      "description": "AOL Branch master list.",
+      "fields": {
+        "id": "string",
+        "name": "string",
+        "createdAt": "string"
+      }
+    },
+    "aol_godowns": {
+      "description": "AOL Godown master list.",
+      "fields": {
+        "id": "string",
+        "name": "string",
+        "branchName": "string (optional)",
+        "gstin": "string (optional)",
+        "address": "string (optional)",
+        "dispatchLocation": "string (optional)",
+        "warehouseManager": "string (optional)",
+        "contactEmail": "string (optional)",
+        "phoneNo": "string (optional)",
+        "description": "string (optional)",
+        "createdAt": "string"
+      }
+    },
+    "suppliers": {
+      "description": "Supplier master list.",
+      "fields": {
+        "id": "string",
+        "name": "string",
+        "createdAt": "string"
+      }
+    },
+    "suppliers_master": {
+      "description": "Supplier Master list with full contact and import/domestic classification.",
+      "fields": {
+        "id": "string",
+        "supplierName": "string",
+        "supplierGst": "string (optional)",
+        "supplierAddress": "string (optional)",
+        "contactPersonName": "string (optional)",
+        "contactPersonEmail": "string (optional)",
+        "contactPersonPhone": "string (optional)",
+        "importDomestic": "string (optional)",
+        "remarks": "string (optional)",
+        "createdAt": "string"
+      }
+    },
+    "proforma_invoices": {
+      "description": "Proforma Invoices (PI) synced with Google Sheets (INR only).",
+      "fields": {
+        "id": "string",
+        "createdAt": "string (optional)",
+        "piDate": "string (optional)",
+        "piNumber": "string (optional)",
+        "createEditDate": "string",
+        "orderPlacedBy": "string",
+        "customerMobileNumber": "string",
+        "customerEmailId": "string",
+        "billToCompanyName": "string",
+        "billToAddress": "string",
+        "shipToCompanyName": "string",
+        "shipToAddress": "string",
+        "buyersOrderNumber": "string",
+        "paymentTerms": "string",
+        "otherTerms": "string",
+        "aolBankAccount": "string",
+        "accountNo": "string",
+        "ifscCode": "string",
+        "aolBranchGodown": "string",
+        "aolBranchAddress": "string",
+        "aolBranchGstin": "string",
+        "aolSalesPersonName": "string",
+        "aolSalesPersonEmail": "string",
+        "productName1": "string",
+        "productQty1": "number",
+        "productRate1": "number",
+        "amount1": "number",
+        "productName2": "string (optional)",
+        "productQty2": "number (optional)",
+        "productRate2": "number (optional)",
+        "amount2": "number (optional)",
+        "productName3": "string (optional)",
+        "productQty3": "number (optional)",
+        "productRate3": "number (optional)",
+        "amount3": "number (optional)",
+        "productName4": "string (optional)",
+        "productQty4": "number (optional)",
+        "productRate4": "number (optional)",
+        "amount4": "number (optional)",
+        "freightCharges": "number",
+        "tcsApplicableOrNot": "string",
+        "deliveryNoteTerms": "string",
+        "partyRemark": "string",
+        "subTotal": "number",
+        "gst": "number",
+        "tcsAmount": "number (optional)",
+        "totalInNum": "number",
+        "amountInWord": "string",
+        "createdBy": "string",
+        "editBy": "string (optional)",
+        "editTimestamp": "string (optional)",
+        "createdByUserId": "string (optional)",
+        "piPdfUrl": "string (optional)",
+        "PDF File URLs": "string (optional)"
+      }
+    }
+  }
+}
