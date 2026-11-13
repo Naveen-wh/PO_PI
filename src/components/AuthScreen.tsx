@@ -330,74 +330,12 @@ export default function AuthScreen({ onAuthSuccess, externalError, onClearExtern
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {isRegister && (
-            <div className="space-y-1">
-              <label className="text-[10px] font-mono font-bold text-slate-500 uppercase">
-                Full Name
-              </label>
-              <div className="relative">
-                <UserIcon className="absolute left-3 top-2.5 text-slate-400" size={14} />
-                <input
-                  type="text"
-                  placeholder="e.g. John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="pl-9 pr-3 py-1.5 w-full text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 text-slate-800"
-                />
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-1">
-            <label className="text-[10px] font-mono font-bold text-slate-500 uppercase">
-              Work Email Address
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-2.5 text-slate-400" size={14} />
-              <input
-                type="email"
-                placeholder="you@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-9 pr-3 py-1.5 w-full text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 text-slate-800"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] font-mono font-bold text-slate-500 uppercase">
-                Secure Password
-              </label>
-            </div>
-            <div className="relative">
-              <Key className="absolute left-3 top-2.5 text-slate-400" size={14} />
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-9 pr-3 py-1.5 w-full text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 text-slate-800"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs tracking-wider uppercase py-2.5 rounded-lg transition-colors cursor-pointer border border-emerald-700/10 shadow-xs flex items-center justify-center gap-1.5"
-          >
-            {loading ? "Processing..." : isRegister ? "Create Credentials" : "Sign In Securely"}
-          </button>
-        </form>
-
         <div className="relative py-2.5">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-slate-200"></div>
           </div>
           <div className="relative flex justify-center text-[9px] font-mono font-bold uppercase">
-            <span className="bg-white px-2.5 text-slate-400 leading-none">Or link credential provider</span>
+            <span className="bg-white px-2.5 text-slate-400 leading-none">link credential provider</span>
           </div>
         </div>
 
@@ -416,48 +354,9 @@ export default function AuthScreen({ onAuthSuccess, externalError, onClearExtern
           Google Single Sign-On (SSO)
         </button>
 
-        {/* 1-Click Executive Admin Direct Sign In */}
-        <div className="pt-2 border-t border-slate-100 space-y-2">
-          <span className="text-[10px] font-mono font-bold uppercase text-slate-400 block text-center">
-            ⚡ 1-Click Direct Admin Sign In:
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickAdminSignIn("gcp@aromaorganic.in")}
-              disabled={loading}
-              className="w-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 dark:bg-emerald-950/60 dark:border-emerald-800 dark:text-emerald-300 text-[11px] font-mono font-bold p-2 rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer"
-            >
-              <Shield size={13} className="text-emerald-600" />
-              <span>gcp@aromaorganic.in</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickAdminSignIn("naveen@chsurya.in")}
-              disabled={loading}
-              className="w-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 dark:bg-emerald-950/60 dark:border-emerald-800 dark:text-emerald-300 text-[11px] font-mono font-bold p-2 rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer"
-            >
-              <Shield size={13} className="text-emerald-600" />
-              <span>naveen@chsurya.in</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Toggle Mode Link */}
-        <div className="text-center pt-2">
-          <button
-            onClick={() => {
-              setIsRegister(!isRegister);
-              setErrorMsg("");
-            }}
-            className="text-[10px] font-mono font-bold text-emerald-600 hover:text-emerald-700 uppercase tracking-wide underline decoration-dotted underline-offset-4"
-          >
-            {isRegister
-              ? "Already mapped? Log back in here"
-              : "Register email account"}
-          </button>
-        </div>
+        
+       
+        
 
 
       </div>
