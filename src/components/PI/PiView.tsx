@@ -13,6 +13,7 @@ import {
   FreightTerm,
   PiRecord,
 } from "../../types";
+import { sortRecordsByCreatedDesc } from "../../lib/operationalSheetsService";
 import {
   Plus,
   Search,
@@ -333,6 +334,233 @@ function SearchableClientSelect({
   );
 }
 
+interface ProductOptionItem {
+  id: string;
+  name: string;
+  category?: string;
+  group?: string;
+  manufacturer?: string;
+  hsnCode?: string;
+}
+
+interface SearchableProductSelectProps {
+  value: string;
+  onChange: (value: string) => void;
+  products: ProductOptionItem[];
+  placeholder?: string;
+  required?: boolean;
+  accentColor?: "emerald" | "amber";
+}
+
+function SearchableProductSelect({
+  value,
+  onChange,
+  products,
+  placeholder = "Type to search or enter product name...",
+  required = false,
+  accentColor = "emerald",
+}: SearchableProductSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(value || "");
+  const [filterActive, setFilterActive] = useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsOpen(false);
+        setFilterActive(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    setSearchTerm(value || "");
+  }, [value]);
+
+  const filteredProducts = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!filterActive || !term) return products;
+    return products.filter(
+      (p) =>
+        p.name.toLowerCase().includes(term) ||
+        (p.category && p.category.toLowerCase().includes(term)) ||
+        (p.group && p.group.toLowerCase().includes(term)) ||
+        (p.manufacturer && p.manufacturer.toLowerCase().includes(term)) ||
+        (p.hsnCode && p.hsnCode.toLowerCase().includes(term)),
+    );
+  }, [products, searchTerm, filterActive]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const text = e.target.value;
+    setSearchTerm(text);
+    setFilterActive(true);
+    onChange(text);
+    if (!isOpen) setIsOpen(true);
+  };
+
+  const handleSelect = (item: ProductOptionItem) => {
+    setSearchTerm(item.name);
+    onChange(item.name);
+    setFilterActive(false);
+    setIsOpen(false);
+  };
+
+  const handleClear = () => {
+    setSearchTerm("");
+    onChange("");
+    setFilterActive(false);
+    setIsOpen(true);
+    inputRef.current?.focus();
+  };
+
+  const activeFocusRing =
+    accentColor === "amber"
+      ? "focus:ring-amber-500 focus:border-amber-500"
+      : "focus:ring-emerald-500 focus:border-emerald-500";
+
+  const selectedItemClasses =
+    accentColor === "amber"
+      ? "bg-amber-50 text-amber-950 font-bold border-l-4 border-amber-600"
+      : "bg-emerald-50 text-emerald-950 font-bold border-l-4 border-emerald-600";
+
+  const hoverItemClasses =
+    accentColor === "amber" ? "hover:bg-amber-50/80" : "hover:bg-emerald-50/80";
+
+  const chevronOpenColor =
+    accentColor === "amber" ? "text-amber-600" : "text-emerald-600";
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <div className="relative flex items-center">
+        <input
+          ref={inputRef}
+          type="text"
+          required={required}
+          value={searchTerm}
+          placeholder={placeholder}
+          onFocus={() => {
+            setFilterActive(false);
+            setIsOpen(true);
+          }}
+          onChange={handleInputChange}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              setIsOpen(false);
+              setFilterActive(false);
+            } else if (
+              e.key === "Enter" &&
+              isOpen &&
+              filteredProducts.length > 0
+            ) {
+              e.preventDefault();
+              handleSelect(filteredProducts[0]);
+            }
+          }}
+          className={`w-full pl-2.5 pr-14 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-1 ${activeFocusRing}`}
+        />
+
+        <div className="absolute right-1.5 flex items-center gap-0.5">
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={handleClear}
+              title="Clear selection"
+              className="p-1 text-slate-400 hover:text-slate-600 rounded transition"
+            >
+              <X size={13} />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              setFilterActive(false);
+              setIsOpen((prev) => !prev);
+            }}
+            title="Toggle product list"
+            className="p-1 text-slate-400 hover:text-slate-600 rounded transition"
+          >
+            <ChevronDown
+              size={14}
+              className={`transition-transform duration-150 ${isOpen ? `rotate-180 ${chevronOpenColor}` : ""}`}
+            />
+          </button>
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden max-h-64 flex flex-col animate-in fade-in duration-100">
+          <div className="p-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-[10px] text-slate-500 font-mono font-semibold">
+            <span>
+              {filteredProducts.length} product
+              {filteredProducts.length === 1 ? "" : "s"} (sorted A-Z)
+            </span>
+          </div>
+
+          <div className="overflow-y-auto flex-1 divide-y divide-slate-100">
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((prod) => {
+                const isSelected =
+                  value.trim().toLowerCase() === prod.name.trim().toLowerCase();
+                return (
+                  <button
+                    key={prod.id}
+                    type="button"
+                    onClick={() => handleSelect(prod)}
+                    className={`w-full text-left px-3 py-2 transition flex items-start justify-between gap-2 group ${hoverItemClasses} ${
+                      isSelected ? selectedItemClasses : "text-slate-700"
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                        {prod.name}
+                      </div>
+                      {(prod.category || prod.group || prod.hsnCode) && (
+                        <div className="mt-0.5 text-[10px] text-slate-500 font-mono flex items-center gap-2 flex-wrap">
+                          {prod.category && <span>{prod.category}</span>}
+                          {prod.group && <span>• {prod.group}</span>}
+                          {prod.hsnCode && <span>• HSN: {prod.hsnCode}</span>}
+                        </div>
+                      )}
+                    </div>
+
+                    {isSelected && (
+                      <CheckCircle2
+                        size={15}
+                        className={`${chevronOpenColor} shrink-0 mt-0.5`}
+                      />
+                    )}
+                  </button>
+                );
+              })
+            ) : (
+              <div className="p-3.5 text-center text-xs text-slate-500 space-y-2">
+                <p>No existing product matches &quot;{searchTerm}&quot;.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsOpen(false);
+                    setFilterActive(false);
+                  }}
+                  className="px-2.5 py-1 text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium"
+                >
+                  Use &quot;{searchTerm}&quot;
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface PiProductSlotForm {
   productName: string;
   productQty: string;
@@ -391,7 +619,7 @@ export default function PiView({
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCompany, setFilterCompany] = useState("all");
   const [filterBranch, setFilterBranch] = useState("all");
-  const [filterProduct, setFilterProduct] = useState("all");
+  const [filterSalesPerson, setFilterSalesPerson] = useState("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [dateFilterType, setDateFilterType] = useState<"entry" | "invoice">(
@@ -462,10 +690,26 @@ export default function PiView({
     return Array.from(set).sort();
   }, [aolGodowns]);
 
-  const allProductNames = useMemo(() => {
-    const set = new Set<string>();
-    products.forEach((p) => p?.name && set.add(p.name.trim()));
-    return Array.from(set).sort();
+  const sortedProductsMaster = useMemo<ProductOptionItem[]>(() => {
+    const list: ProductOptionItem[] = [];
+    const seen = new Set<string>();
+    products.forEach((p) => {
+      const name = (p?.name || "").trim();
+      if (name && !seen.has(name.toLowerCase())) {
+        seen.add(name.toLowerCase());
+        list.push({
+          id: p.id || `prod-${name}`,
+          name,
+          category: (p.category || "").trim(),
+          group: (p.group || "").trim(),
+          manufacturer: (p.manufacturer || "").trim(),
+          hsnCode: (p.hsnCode || "").trim(),
+        });
+      }
+    });
+    return list.sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+    );
   }, [products]);
 
   const allDeliveryTerms = useMemo(() => {
@@ -1276,59 +1520,83 @@ export default function PiView({
     return Array.from(set).sort();
   }, [visiblePiRecords]);
 
-  const filteredRecords = visiblePiRecords.filter((rec) => {
-    const prods = getPiProductsList(rec);
-    const prodNames = prods.map((p) => p.productName.toLowerCase()).join(" ");
-    const q = searchTerm.trim().toLowerCase();
-
-    const matchesSearch =
-      !q ||
-      (rec.piNumber || "").toLowerCase().includes(q) ||
-      (rec.buyersOrderNumber || "").toLowerCase().includes(q) ||
-      (rec.billToCompanyName || "").toLowerCase().includes(q) ||
-      (rec.shipToCompanyName || "").toLowerCase().includes(q) ||
-      (rec.orderPlacedBy || "").toLowerCase().includes(q) ||
-      (rec.aolBranchGodown || "").toLowerCase().includes(q) ||
-      (rec.aolSalesPersonName || "").toLowerCase().includes(q) ||
-      (rec.aolSalesPersonEmail || "").toLowerCase().includes(q) ||
-      prodNames.includes(q);
-
-    const matchesCompany =
-      filterCompany === "all" ||
-      (rec.billToCompanyName || "").trim() === filterCompany;
-    const matchesBranch =
-      filterBranch === "all" ||
-      (rec.aolBranchGodown || "").trim() === filterBranch;
-    const matchesProduct =
-      filterProduct === "all" ||
-      prods.some((p) => p.productName.trim() === filterProduct);
-
-    let matchesDate = true;
-    if (startDate || endDate) {
-      const recDate =
-        dateFilterType === "entry" ? rec.createEditDate : rec.piDate;
-      if (!recDate) {
-        matchesDate = false;
-      } else {
-        if (startDate && recDate < startDate) matchesDate = false;
-        if (endDate && recDate > endDate) matchesDate = false;
+  const uniqueSalesPersons = useMemo(() => {
+    const map = new Map<string, string>();
+    visiblePiRecords.forEach((r) => {
+      const val = (r.aolSalesPersonName || "").trim();
+      if (val && !map.has(val.toLowerCase())) {
+        map.set(val.toLowerCase(), val);
       }
+    });
+    if (!isSalesTeamUser) {
+      salesTeamUsers.forEach((u) => {
+        const val = (u.name || "").trim();
+        if (val && !map.has(val.toLowerCase())) {
+          map.set(val.toLowerCase(), val);
+        }
+      });
     }
-
-    return (
-      matchesSearch &&
-      matchesCompany &&
-      matchesBranch &&
-      matchesProduct &&
-      matchesDate
+    return Array.from(map.values()).sort((a, b) =>
+      a.localeCompare(b, undefined, { sensitivity: "base" }),
     );
-  });
+  }, [visiblePiRecords, isSalesTeamUser, salesTeamUsers]);
+
+  const filteredRecords = sortRecordsByCreatedDesc(
+    visiblePiRecords.filter((rec) => {
+      const prods = getPiProductsList(rec);
+      const prodNames = prods.map((p) => p.productName.toLowerCase()).join(" ");
+      const q = searchTerm.trim().toLowerCase();
+
+      const matchesSearch =
+        !q ||
+        (rec.piNumber || "").toLowerCase().includes(q) ||
+        (rec.buyersOrderNumber || "").toLowerCase().includes(q) ||
+        (rec.billToCompanyName || "").toLowerCase().includes(q) ||
+        (rec.shipToCompanyName || "").toLowerCase().includes(q) ||
+        (rec.orderPlacedBy || "").toLowerCase().includes(q) ||
+        (rec.aolBranchGodown || "").toLowerCase().includes(q) ||
+        (rec.aolSalesPersonName || "").toLowerCase().includes(q) ||
+        (rec.aolSalesPersonEmail || "").toLowerCase().includes(q) ||
+        prodNames.includes(q);
+
+      const matchesCompany =
+        filterCompany === "all" ||
+        (rec.billToCompanyName || "").trim() === filterCompany;
+      const matchesBranch =
+        filterBranch === "all" ||
+        (rec.aolBranchGodown || "").trim() === filterBranch;
+      const matchesSalesPerson =
+        filterSalesPerson === "all" ||
+        (rec.aolSalesPersonName || "").trim().toLowerCase() ===
+          filterSalesPerson.trim().toLowerCase();
+
+      let matchesDate = true;
+      if (startDate || endDate) {
+        const recDate =
+          dateFilterType === "entry" ? rec.createEditDate : rec.piDate;
+        if (!recDate) {
+          matchesDate = false;
+        } else {
+          if (startDate && recDate < startDate) matchesDate = false;
+          if (endDate && recDate > endDate) matchesDate = false;
+        }
+      }
+
+      return (
+        matchesSearch &&
+        matchesCompany &&
+        matchesBranch &&
+        matchesSalesPerson &&
+        matchesDate
+      );
+    }),
+  );
 
   const isFiltered = Boolean(
     searchTerm.trim() !== "" ||
       filterCompany !== "all" ||
       filterBranch !== "all" ||
-      filterProduct !== "all" ||
+      filterSalesPerson !== "all" ||
       startDate !== "" ||
       endDate !== "",
   );
@@ -1360,7 +1628,7 @@ export default function PiView({
     setSearchTerm("");
     setFilterCompany("all");
     setFilterBranch("all");
-    setFilterProduct("all");
+    setFilterSalesPerson("all");
     setStartDate("");
     setEndDate("");
   };
@@ -1508,16 +1776,17 @@ export default function PiView({
               ))}
             </select>
 
-            {/* Product Filter */}
+            {/* AOL Sales Person Name Filter */}
             <select
-              value={filterProduct}
-              onChange={(e) => setFilterProduct(e.target.value)}
-              className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-slate-700 outline-none max-w-[180px]"
+              value={filterSalesPerson}
+              onChange={(e) => setFilterSalesPerson(e.target.value)}
+              className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-slate-700 outline-none max-w-[200px]"
+              aria-label="Filter by AOL Sales Person Name"
             >
-              <option value="all">All Products</option>
-              {allProductNames.map((p) => (
-                <option key={p} value={p}>
-                  {p}
+              <option value="all">All AOL Sales Persons</option>
+              {uniqueSalesPersons.map((sp) => (
+                <option key={sp} value={sp}>
+                  {sp}
                 </option>
               ))}
             </select>
@@ -1560,10 +1829,10 @@ export default function PiView({
 
       {/* Main Records Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto max-h-[640px] scrollbar-thin">
+        <div className="overflow-auto max-h-[32.25rem] scrollbar-thin">
           <table className="w-full text-left border-collapse text-xs">
             <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700 font-mono text-[11px] uppercase tracking-wider text-slate-600 dark:text-slate-200">
-              <tr>
+              <tr className="whitespace-nowrap">
                 <th className="py-2.5 px-3 font-semibold text-slate-500 w-10">
                   #
                 </th>
@@ -1835,8 +2104,8 @@ export default function PiView({
               )}
             </tbody>
             {filteredRecords.length > 0 && (
-              <tfoot className="bg-slate-50 font-bold border-t border-slate-200 text-slate-800 font-mono text-[11px]">
-                <tr>
+              <tfoot className="bg-slate-50 dark:bg-slate-800 sticky bottom-0 z-10 font-bold border-t border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-mono text-[11px]">
+                <tr className="whitespace-nowrap">
                   <td
                     colSpan={10}
                     className="py-2.5 px-3 text-right uppercase tracking-wider text-slate-500"
@@ -2381,25 +2650,20 @@ export default function PiView({
                             <label className="block text-slate-600 font-medium mb-1 text-[11px]">
                               Product Name {pIdx + 1} *
                             </label>
-                            <select
+                            <SearchableProductSelect
                               required
                               value={prod.productName}
-                              onChange={(e) =>
+                              onChange={(val) =>
                                 handleCreateProductChange(
                                   pIdx,
                                   "productName",
-                                  e.target.value,
+                                  val,
                                 )
                               }
-                              className="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500 font-medium text-xs"
-                            >
-                              <option value="">-- Select Product --</option>
-                              {allProductNames.map((p) => (
-                                <option key={p} value={p}>
-                                  {p}
-                                </option>
-                              ))}
-                            </select>
+                              products={sortedProductsMaster}
+                              placeholder="Type to search or enter product name..."
+                              accentColor="emerald"
+                            />
                           </div>
 
                           <div>
@@ -3122,31 +3386,20 @@ export default function PiView({
                             <label className="block text-slate-600 font-medium mb-1 text-[11px]">
                               Product Name {pIdx + 1} *
                             </label>
-                            <select
+                            <SearchableProductSelect
                               required
                               value={prod.productName}
-                              onChange={(e) =>
+                              onChange={(val) =>
                                 handleEditProductChange(
                                   pIdx,
                                   "productName",
-                                  e.target.value,
+                                  val,
                                 )
                               }
-                              className="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-lg font-medium text-xs"
-                            >
-                              <option value="">-- Select Product --</option>
-                              {prod.productName &&
-                                !allProductNames.includes(prod.productName) && (
-                                  <option value={prod.productName}>
-                                    {prod.productName}
-                                  </option>
-                                )}
-                              {allProductNames.map((p) => (
-                                <option key={p} value={p}>
-                                  {p}
-                                </option>
-                              ))}
-                            </select>
+                              products={sortedProductsMaster}
+                              placeholder="Type to search or enter product name..."
+                              accentColor="amber"
+                            />
                           </div>
 
                           <div>

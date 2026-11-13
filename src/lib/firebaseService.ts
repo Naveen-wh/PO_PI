@@ -925,21 +925,34 @@ export async function bulkSaveGenericCollectionRecords(collectionKey: string, re
   if (!records || records.length === 0) return 0;
   let savedCount = 0;
   const chunkSize = 400; // safe batch chunk size under Firestore 500 limit
-  for (let i = 0; i < records.length; i += chunkSize) {
-    const chunk = records.slice(i, i + chunkSize);
-    const batch = writeBatch(db);
-    for (const record of chunk) {
-      const cleanRec = cleanUndefined(record);
-      if (!cleanRec.id) {
-        cleanRec.id = `${collectionKey.replace(/_/g, "")}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+  try {
+    for (let i = 0; i < records.length; i += chunkSize) {
+      const chunk = records.slice(i, i + chunkSize);
+      const batch = writeBatch(db);
+      for (const record of chunk) {
+        const cleanRec = cleanUndefined(record);
+        if (!cleanRec.id) {
+          cleanRec.id = `${collectionKey.replace(/_/g, "")}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+        }
+        const docRef = doc(db, collectionKey, cleanRec.id);
+        batch.set(docRef, cleanRec, { merge: true });
+        savedCount++;
       }
-      const docRef = doc(db, collectionKey, cleanRec.id);
-      batch.set(docRef, cleanRec, { merge: true });
-      savedCount++;
+      await batch.commit();
     }
-    await batch.commit();
+    return savedCount;
+  } catch (err) {
+    handleFirestoreError(err, OperationType.WRITE, collectionKey);
+    return savedCount;
   }
-  return savedCount;
+}
+
+export async function bulkSaveClients(clients: Client[]): Promise<number> {
+  return bulkSaveGenericCollectionRecords("clients", clients);
+}
+
+export async function bulkSaveSuppliersMaster(suppliers: SupplierMasterRecord[]): Promise<number> {
+  return bulkSaveGenericCollectionRecords("suppliers_master", suppliers);
 }
 
 export interface GoogleSheetsConfigDoc {

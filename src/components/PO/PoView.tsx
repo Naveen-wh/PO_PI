@@ -17,6 +17,7 @@ import {
   PoRecord,
   SupplierMasterRecord,
 } from "../../types";
+import { sortRecordsByCreatedDesc } from "../../lib/operationalSheetsService";
 import {
   Plus,
   Search,
@@ -416,6 +417,233 @@ export function SearchableSupplierSelect({
   );
 }
 
+export interface ProductOptionItem {
+  id: string;
+  name: string;
+  category?: string;
+  group?: string;
+  manufacturer?: string;
+  hsnCode?: string;
+}
+
+interface SearchableProductSelectProps {
+  value: string;
+  onChange: (value: string) => void;
+  products: ProductOptionItem[];
+  placeholder?: string;
+  required?: boolean;
+  accentColor?: "emerald" | "amber";
+}
+
+export function SearchableProductSelect({
+  value,
+  onChange,
+  products,
+  placeholder = "Type to search or enter product name...",
+  required = false,
+  accentColor = "emerald",
+}: SearchableProductSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(value || "");
+  const [filterActive, setFilterActive] = useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsOpen(false);
+        setFilterActive(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    setSearchTerm(value || "");
+  }, [value]);
+
+  const filteredProducts = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!filterActive || !term) return products;
+    return products.filter(
+      (p) =>
+        p.name.toLowerCase().includes(term) ||
+        (p.category && p.category.toLowerCase().includes(term)) ||
+        (p.group && p.group.toLowerCase().includes(term)) ||
+        (p.manufacturer && p.manufacturer.toLowerCase().includes(term)) ||
+        (p.hsnCode && p.hsnCode.toLowerCase().includes(term)),
+    );
+  }, [products, searchTerm, filterActive]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const text = e.target.value;
+    setSearchTerm(text);
+    setFilterActive(true);
+    onChange(text);
+    if (!isOpen) setIsOpen(true);
+  };
+
+  const handleSelect = (item: ProductOptionItem) => {
+    setSearchTerm(item.name);
+    onChange(item.name);
+    setFilterActive(false);
+    setIsOpen(false);
+  };
+
+  const handleClear = () => {
+    setSearchTerm("");
+    onChange("");
+    setFilterActive(false);
+    setIsOpen(true);
+    inputRef.current?.focus();
+  };
+
+  const activeFocusRing =
+    accentColor === "amber"
+      ? "focus:ring-amber-500 focus:border-amber-500"
+      : "focus:ring-emerald-500 focus:border-emerald-500";
+
+  const selectedItemClasses =
+    accentColor === "amber"
+      ? "bg-amber-50 text-amber-950 font-bold border-l-4 border-amber-600"
+      : "bg-emerald-50 text-emerald-950 font-bold border-l-4 border-emerald-600";
+
+  const hoverItemClasses =
+    accentColor === "amber" ? "hover:bg-amber-50/80" : "hover:bg-emerald-50/80";
+
+  const chevronOpenColor =
+    accentColor === "amber" ? "text-amber-600" : "text-emerald-600";
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <div className="relative flex items-center">
+        <input
+          ref={inputRef}
+          type="text"
+          required={required}
+          value={searchTerm}
+          placeholder={placeholder}
+          onFocus={() => {
+            setFilterActive(false);
+            setIsOpen(true);
+          }}
+          onChange={handleInputChange}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              setIsOpen(false);
+              setFilterActive(false);
+            } else if (
+              e.key === "Enter" &&
+              isOpen &&
+              filteredProducts.length > 0
+            ) {
+              e.preventDefault();
+              handleSelect(filteredProducts[0]);
+            }
+          }}
+          className={`w-full pl-2.5 pr-14 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-1 ${activeFocusRing}`}
+        />
+
+        <div className="absolute right-1 flex items-center gap-0.5">
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={handleClear}
+              title="Clear selection"
+              className="p-1 text-slate-400 hover:text-slate-600 rounded transition"
+            >
+              <X size={12} />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              setFilterActive(false);
+              setIsOpen((prev) => !prev);
+            }}
+            title="Toggle product list"
+            className="p-1 text-slate-400 hover:text-slate-600 rounded transition"
+          >
+            <ChevronDown
+              size={14}
+              className={`transition-transform duration-150 ${isOpen ? `rotate-180 ${chevronOpenColor}` : ""}`}
+            />
+          </button>
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden max-h-64 flex flex-col animate-in fade-in duration-100">
+          <div className="p-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-[10px] text-slate-500 font-mono font-semibold">
+            <span>
+              {filteredProducts.length} product
+              {filteredProducts.length === 1 ? "" : "s"} (sorted A-Z)
+            </span>
+          </div>
+
+          <div className="overflow-y-auto flex-1 divide-y divide-slate-100">
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((prod) => {
+                const isSelected =
+                  value.trim().toLowerCase() === prod.name.trim().toLowerCase();
+                return (
+                  <button
+                    key={prod.id}
+                    type="button"
+                    onClick={() => handleSelect(prod)}
+                    className={`w-full text-left px-3 py-2 transition flex items-start justify-between gap-2 group ${hoverItemClasses} ${
+                      isSelected ? selectedItemClasses : "text-slate-700"
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                        {prod.name}
+                      </div>
+                      {(prod.category || prod.group || prod.hsnCode) && (
+                        <div className="mt-0.5 text-[10px] text-slate-500 font-mono flex items-center gap-2 flex-wrap">
+                          {prod.category && <span>{prod.category}</span>}
+                          {prod.group && <span>• {prod.group}</span>}
+                          {prod.hsnCode && <span>• HSN: {prod.hsnCode}</span>}
+                        </div>
+                      )}
+                    </div>
+
+                    {isSelected && (
+                      <CheckCircle2
+                        size={15}
+                        className={`${chevronOpenColor} shrink-0 mt-0.5`}
+                      />
+                    )}
+                  </button>
+                );
+              })
+            ) : (
+              <div className="p-3.5 text-center text-xs text-slate-500 space-y-2">
+                <p>No existing product matches &quot;{searchTerm}&quot;.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsOpen(false);
+                    setFilterActive(false);
+                  }}
+                  className="px-2.5 py-1 text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium"
+                >
+                  Use &quot;{searchTerm}&quot;
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export interface PoViewProps {
   activeUserId: string;
   activeUser?: User;
@@ -483,7 +711,7 @@ export default function PoView({
   const [searchTerm, setSearchTerm] = useState("");
   const [filterSupplier, setFilterSupplier] = useState("all");
   const [filterLocation, setFilterLocation] = useState("all");
-  const [filterProduct, setFilterProduct] = useState("all");
+  const [filterCheckedBy, setFilterCheckedBy] = useState("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [dateFilterType, setDateFilterType] = useState<"entry" | "invoice">(
@@ -671,11 +899,50 @@ export default function PoView({
 
   const allBillingLocations = allDeliveryLocations;
 
-  const allProductNames = useMemo(() => {
-    const set = new Set<string>();
-    products.forEach((p) => p?.name && set.add(p.name.trim()));
-    return Array.from(set).sort();
+  const sortedProductsMaster = useMemo<ProductOptionItem[]>(() => {
+    const list: ProductOptionItem[] = [];
+    const seen = new Set<string>();
+    products.forEach((p) => {
+      const name = (p?.name || "").trim();
+      if (name && !seen.has(name.toLowerCase())) {
+        seen.add(name.toLowerCase());
+        list.push({
+          id: p.id || `prod-${name}`,
+          name,
+          category: (p.category || "").trim(),
+          group: (p.group || "").trim(),
+          manufacturer: (p.manufacturer || "").trim(),
+          hsnCode: (p.hsnCode || "").trim(),
+        });
+      }
+    });
+    return list.sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+    );
   }, [products]);
+
+  const allProductNames = useMemo(() => {
+    return sortedProductsMaster.map((p) => p.name);
+  }, [sortedProductsMaster]);
+
+  const allCheckedByOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    poRecords.forEach((rec) => {
+      const val = (rec.checkedBy || "").trim();
+      if (val && !map.has(val.toLowerCase())) {
+        map.set(val.toLowerCase(), val);
+      }
+    });
+    users.forEach((u) => {
+      const val = (u.name || "").trim();
+      if (val && !map.has(val.toLowerCase())) {
+        map.set(val.toLowerCase(), val);
+      }
+    });
+    return Array.from(map.values()).sort((a, b) =>
+      a.localeCompare(b, undefined, { sensitivity: "base" }),
+    );
+  }, [poRecords, users]);
 
   const allDeliveryTerms = useMemo(() => {
     const set = new Set<string>([
@@ -1919,63 +2186,67 @@ const handleGeneratePdfClick = async (rec: PoRecord) => {
   */
   }
 
-  // Filter Logic
-  const filteredRecords = poRecords.filter((rec) => {
-    const prods = getPoProductsList(rec);
-    const prodNames = prods.map((p) => p.description.toLowerCase()).join(" ");
+  // Filter & Sort Logic (most recently created on top)
+  const filteredRecords = sortRecordsByCreatedDesc(
+    poRecords.filter((rec) => {
+      const prods = getPoProductsList(rec);
+      const prodNames = prods.map((p) => p.description.toLowerCase()).join(" ");
 
-    const matchesSearch =
-      (rec.poNumber || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (rec.supplierName || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      prodNames.includes(searchTerm.toLowerCase()) ||
-      (rec.deliveryLocation || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      (rec.billingLocation || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      (rec.preparedBy || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (rec.createdBy || "").toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch =
+        (rec.poNumber || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (rec.supplierName || "")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        prodNames.includes(searchTerm.toLowerCase()) ||
+        (rec.deliveryLocation || "")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        (rec.billingLocation || "")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        (rec.preparedBy || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (rec.checkedBy || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (rec.createdBy || "").toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesSupplier =
-      filterSupplier === "all" || rec.supplierName === filterSupplier;
-    const matchesLocation =
-      filterLocation === "all" ||
-      rec.deliveryLocation === filterLocation ||
-      rec.billingLocation === filterLocation;
-    const matchesProduct =
-      filterProduct === "all" ||
-      prods.some((p) => p.description === filterProduct);
+      const matchesSupplier =
+        filterSupplier === "all" || rec.supplierName === filterSupplier;
+      const matchesLocation =
+        filterLocation === "all" ||
+        rec.deliveryLocation === filterLocation ||
+        rec.billingLocation === filterLocation;
+      const matchesCheckedBy =
+        filterCheckedBy === "all" ||
+        (rec.checkedBy || "").trim().toLowerCase() ===
+          filterCheckedBy.trim().toLowerCase();
 
-    let matchesDate = true;
-    if (startDate || endDate) {
-      const recDate =
-        dateFilterType === "entry" ? rec.createEditDate : rec.poDate;
-      if (!recDate) {
-        matchesDate = false;
-      } else {
-        if (startDate && recDate < startDate) matchesDate = false;
-        if (endDate && recDate > endDate) matchesDate = false;
+      let matchesDate = true;
+      if (startDate || endDate) {
+        const recDate =
+          dateFilterType === "entry" ? rec.createEditDate : rec.poDate;
+        if (!recDate) {
+          matchesDate = false;
+        } else {
+          if (startDate && recDate < startDate) matchesDate = false;
+          if (endDate && recDate > endDate) matchesDate = false;
+        }
       }
-    }
 
-    return (
-      matchesSearch &&
-      matchesSupplier &&
-      matchesLocation &&
-      matchesProduct &&
-      matchesDate
-    );
-  });
+      return (
+        matchesSearch &&
+        matchesSupplier &&
+        matchesLocation &&
+        matchesCheckedBy &&
+        matchesDate
+      );
+    }),
+  );
 
   // Totals calculations
   const isFiltered = Boolean(
     searchTerm.trim() !== "" ||
     filterSupplier !== "all" ||
     filterLocation !== "all" ||
-    filterProduct !== "all" ||
+    filterCheckedBy !== "all" ||
     startDate !== "" ||
     endDate !== "",
   );
@@ -2002,7 +2273,7 @@ const handleGeneratePdfClick = async (rec: PoRecord) => {
     setSearchTerm("");
     setFilterSupplier("all");
     setFilterLocation("all");
-    setFilterProduct("all");
+    setFilterCheckedBy("all");
     setStartDate("");
     setEndDate("");
     setDateFilterType("invoice");
@@ -2199,14 +2470,15 @@ const handleGeneratePdfClick = async (rec: PoRecord) => {
             </select>
 
             <select
-              value={filterProduct}
-              onChange={(e) => setFilterProduct(e.target.value)}
+              value={filterCheckedBy}
+              onChange={(e) => setFilterCheckedBy(e.target.value)}
               className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-slate-700 outline-none"
+              aria-label="Filter by Checked By"
             >
-              <option value="all">All Products</option>
-              {allProductNames.map((p) => (
-                <option key={p} value={p}>
-                  {p}
+              <option value="all">All Checked By</option>
+              {allCheckedByOptions.map((name) => (
+                <option key={name} value={name}>
+                  {name}
                 </option>
               ))}
             </select>
@@ -2249,10 +2521,10 @@ const handleGeneratePdfClick = async (rec: PoRecord) => {
 
       {/* Main Records Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto max-h-[640px] scrollbar-thin">
+        <div className="overflow-auto max-h-[32.25rem] scrollbar-thin">
           <table className="w-full text-left border-collapse text-xs">
             <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700 font-mono text-[11px] uppercase tracking-wider text-slate-600 dark:text-slate-200">
-              <tr>
+              <tr className="whitespace-nowrap">
                 <th className="py-2.5 px-3 font-semibold text-slate-500 w-10">
                   #
                 </th>
@@ -2299,6 +2571,9 @@ const handleGeneratePdfClick = async (rec: PoRecord) => {
                   Prepared By
                 </th>
                 <th className="py-2.5 px-3 font-semibold text-slate-700">
+                  Checked By
+                </th>
+                <th className="py-2.5 px-3 font-semibold text-slate-700">
                   Create/Edit Date
                 </th>
                 <th className="py-2.5 px-3 font-semibold text-slate-700">
@@ -2312,7 +2587,7 @@ const handleGeneratePdfClick = async (rec: PoRecord) => {
             <tbody className="divide-y divide-slate-100">
               {filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={17} className="py-12 text-center text-slate-400">
+                  <td colSpan={19} className="py-12 text-center text-slate-400">
                     <Receipt
                       className="mx-auto mb-2 opacity-30 text-slate-400"
                       size={32}
@@ -2440,6 +2715,9 @@ const handleGeneratePdfClick = async (rec: PoRecord) => {
                       <td className="py-2 px-3 text-slate-600 whitespace-nowrap">
                         {rec.preparedBy || rec.createdBy || "-"}
                       </td>
+                      <td className="py-2 px-3 text-slate-600 whitespace-nowrap">
+                        {rec.checkedBy || "-"}
+                      </td>
                       <td className="py-2 px-3 font-mono text-slate-500 whitespace-nowrap">
                         {rec.createEditDate ||
                           rec.createdAt?.split(" ")[0] ||
@@ -2521,8 +2799,8 @@ const handleGeneratePdfClick = async (rec: PoRecord) => {
               )}
             </tbody>
             {filteredRecords.length > 0 && (
-              <tfoot className="bg-slate-50 font-bold border-t border-slate-200 text-slate-800 font-mono text-[11px]">
-                <tr>
+              <tfoot className="bg-slate-50 dark:bg-slate-800 sticky bottom-0 z-10 font-bold border-t border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-mono text-[11px]">
+                <tr className="whitespace-nowrap">
                   <td
                     colSpan={7}
                     className="py-2.5 px-3 text-right uppercase tracking-wider text-slate-500"
@@ -2560,7 +2838,7 @@ const handleGeneratePdfClick = async (rec: PoRecord) => {
                       maximumFractionDigits: 2,
                     })}
                   </td>
-                  <td colSpan={3}></td>
+                  <td colSpan={5}></td>
                 </tr>
               </tfoot>
             )}
@@ -3020,25 +3298,20 @@ const handleGeneratePdfClick = async (rec: PoRecord) => {
                               Product Description {pIdx + 1} *
                             </label>
                           </div>
-                          <select
+                          <SearchableProductSelect
                             required
                             value={prod.productDescription}
-                            onChange={(e) =>
+                            onChange={(val) =>
                               handleCreateProductChange(
                                 pIdx,
                                 "productDescription",
-                                e.target.value,
+                                val,
                               )
                             }
-                            className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500 font-medium text-xs"
-                          >
-                            <option value="">-- Select Product --</option>
-                            {allProductNames.map((p) => (
-                              <option key={p} value={p}>
-                                {p}
-                              </option>
-                            ))}
-                          </select>
+                            products={sortedProductsMaster}
+                            placeholder="Type to search or enter product name..."
+                            accentColor="emerald"
+                          />
                         </div>
 
                         <div>
@@ -3812,25 +4085,20 @@ const handleGeneratePdfClick = async (rec: PoRecord) => {
                               Product Description {pIdx + 1} *
                             </label>
                           </div>
-                          <select
+                          <SearchableProductSelect
                             required
                             value={prod.productDescription}
-                            onChange={(e) =>
+                            onChange={(val) =>
                               handleEditProductChange(
                                 pIdx,
                                 "productDescription",
-                                e.target.value,
+                                val,
                               )
                             }
-                            className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-1 focus:ring-amber-500 font-medium text-xs"
-                          >
-                            <option value="">-- Select Product --</option>
-                            {allProductNames.map((p) => (
-                              <option key={p} value={p}>
-                                {p}
-                              </option>
-                            ))}
-                          </select>
+                            products={sortedProductsMaster}
+                            placeholder="Type to search or enter product name..."
+                            accentColor="amber"
+                          />
                         </div>
 
                         <div>

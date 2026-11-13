@@ -47,6 +47,7 @@ import {
   syncUserProfile,
   saveTeamTabSettings,
   saveClient,
+  bulkSaveClients,
   deleteClientDoc,
   saveTeam,
   deleteTeamDoc,
@@ -79,6 +80,7 @@ import {
   saveAolGodown,
   deleteAolGodownDoc,
   saveSupplierMaster,
+  bulkSaveSuppliersMaster,
   deleteSupplierMasterDoc,
   BOOTSTRAP_ADMIN_EMAILS
 } from "./lib/firebaseService";
@@ -86,6 +88,7 @@ import {
 import {
   fetchOperationalSheetData,
   syncOperationalAction,
+  sortRecordsByCreatedDesc,
   // clearOperationalSheetRecords,
   OPERATIONAL_COLLECTIONS
 } from "./lib/operationalSheetsService";
@@ -279,11 +282,13 @@ export default function App() {
       ]);
 
       if (Array.isArray(loadedPoRecords) && loadedPoRecords.length > 0) {
-        setPoRecords(loadedPoRecords);
+        setPoRecords(sortRecordsByCreatedDesc(loadedPoRecords));
       }
       if (Array.isArray(loadedPiRecords) && loadedPiRecords.length > 0) {
         setPiRecords(
-          loadedPiRecords.map((row) => normalizePiRow(row, "System"))
+          sortRecordsByCreatedDesc(
+            loadedPiRecords.map((row) => normalizePiRow(row, "System"))
+          )
         );
       }
 
@@ -1347,6 +1352,29 @@ export default function App() {
     });
   };
 
+  const handleBulkImportSuppliersMaster = async (
+    items: (Omit<SupplierMasterRecord, "id" | "createdAt"> & { id?: string; createdAt?: string })[],
+  ) => {
+    const nowIso = new Date().toISOString();
+    const docs: SupplierMasterRecord[] = items.map((item, i) => ({
+      ...item,
+      id: item.id || `sup-m-${Date.now()}-${i}-${Math.random().toString(36).substring(2, 6)}`,
+      createdAt: item.createdAt || nowIso,
+    }));
+    await bulkSaveSuppliersMaster(docs);
+    await saveLog({
+      id: `log-${Date.now()}`,
+      timestamp: nowIso,
+      userId: activeUser.id,
+      userName: activeUser.name,
+      actionType: "Bulk Import Suppliers" as any,
+      targetType: "SUPPLIER_MASTER" as any,
+      targetId: `bulk-suppliers-${Date.now()}`,
+      targetName: `${docs.length} Suppliers`,
+      details: `${activeUser.name} bulk imported ${docs.length} suppliers into Suppliers Master`,
+    });
+  };
+
 
 
 
@@ -1458,6 +1486,30 @@ export default function App() {
       targetId: clientId,
       targetName: updatedClient.companyName,
       details: `${activeUser.name} edited client profile for "${updatedClient.fullName}" at "${updatedClient.companyName}"`
+    });
+  };
+
+  const handleBulkImportClients = async (
+    items: (Omit<Client, "id" | "createdAt"> & { id?: string; createdAt?: string })[],
+  ) => {
+    const nowIso = new Date().toISOString();
+    const docs: Client[] = items.map((item, i) => ({
+      ...item,
+      id: item.id || `client-${Date.now()}-${i}-${Math.random().toString(36).substring(2, 6)}`,
+      createdAt: item.createdAt || nowIso,
+      createdByUserId: item.createdByUserId || activeUser.id,
+    }));
+    await bulkSaveClients(docs);
+    await saveLog({
+      id: `log-${Date.now()}`,
+      timestamp: nowIso,
+      userId: activeUser.id,
+      userName: activeUser.name,
+      actionType: "Bulk Import Clients" as any,
+      targetType: "User",
+      targetId: `bulk-clients-${Date.now()}`,
+      targetName: `${docs.length} Clients`,
+      details: `${activeUser.name} bulk imported ${docs.length} clients into Client Directory`,
     });
   };
 
@@ -1947,6 +1999,7 @@ export default function App() {
               onAddSupplierMaster={handleAddSupplierMaster}
               onEditSupplierMaster={handleEditSupplierMaster}
               onDeleteSupplierMaster={handleDeleteSupplierMaster}
+              onBulkImportSuppliersMaster={handleBulkImportSuppliersMaster}
               users={users}
               products={products}
               clients={clients}
@@ -1997,6 +2050,7 @@ export default function App() {
               onAddClient={handleAddClient}
               onEditClient={handleEditClient}
               onDeleteClient={handleDeleteClient}
+              onBulkImportClients={handleBulkImportClients}
               onAddTask={handleAddTask}
               onToggleTaskComplete={handleToggleTaskComplete}
               onDeleteTask={handleDeleteTask}

@@ -53,6 +53,7 @@ interface ListManagementViewProps {
   onAddClient: (client: Omit<Client, "id" | "createdAt">) => void;
   onEditClient: (clientId: string, client: Partial<Omit<Client, "id" | "createdAt" | "createdByUserId">>) => void;
   onDeleteClient: (clientId: string) => void;
+  onBulkImportClients?: (records: (Omit<Client, "id" | "createdAt"> & { id?: string; createdAt?: string })[]) => Promise<void> | void;
   onAddTask: (task: Omit<SalesTask, "id">) => void;
   onToggleTaskComplete: (taskId: string) => void;
   onDeleteTask: (taskId: string) => void;
@@ -78,6 +79,7 @@ interface ListManagementViewProps {
   onAddSupplierMaster?: (data: Omit<SupplierMasterRecord, "id" | "createdAt">) => void;
   onEditSupplierMaster?: (id: string, data: Omit<SupplierMasterRecord, "id" | "createdAt">) => void;
   onDeleteSupplierMaster?: (id: string) => void;
+  onBulkImportSuppliersMaster?: (records: (Omit<SupplierMasterRecord, "id" | "createdAt"> & { id?: string; createdAt?: string })[]) => Promise<void> | void;
   visibleSubTabs?: { [key: string]: string[] };
   visibleSubSubTabs?: { [key: string]: { [key: string]: string[] } };
 }
@@ -127,6 +129,7 @@ export default function ListManagementView({
   onAddClient,
   onEditClient,
   onDeleteClient,
+  onBulkImportClients,
   onAddTask,
   onToggleTaskComplete,
   onDeleteTask,
@@ -152,6 +155,7 @@ export default function ListManagementView({
   onAddSupplierMaster,
   onEditSupplierMaster,
   onDeleteSupplierMaster,
+  onBulkImportSuppliersMaster,
   visibleSubTabs,
   visibleSubSubTabs,
 }: ListManagementViewProps) {
@@ -258,6 +262,7 @@ export default function ListManagementView({
           onAddClient={onAddClient}
           onEditClient={onEditClient}
           onDeleteClient={onDeleteClient}
+          onBulkImportClients={onBulkImportClients}
           leads={leads}
           workflows={workflows}
           products={products}
@@ -452,6 +457,7 @@ export default function ListManagementView({
           onAddSupplierMaster={onAddSupplierMaster || (() => {})}
           onEditSupplierMaster={onEditSupplierMaster || (() => {})}
           onDeleteSupplierMaster={onDeleteSupplierMaster || (() => {})}
+          onBulkImportSuppliersMaster={onBulkImportSuppliersMaster}
         />
       )}
       </>

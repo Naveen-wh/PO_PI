@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { User, Client, Team, Product, SalesLead, ProjectWorkflow, SalesTask } from "../types";
-import { Briefcase, Plus, Search, Edit2, Trash2, X, Building2, Mail, Phone, MapPin, Hash } from "lucide-react";
+import { Briefcase, Plus, Search, Edit2, Trash2, X, Building2, Mail, Phone, MapPin, Hash, Upload } from "lucide-react";
+import ClientBulkImportModal, { BulkClientImportItem } from "./List/ClientBulkImportModal";
 
 interface ClientsViewProps {
   activeUserId: string;
@@ -10,6 +11,7 @@ interface ClientsViewProps {
   onAddClient?: (client: Omit<Client, "id" | "createdAt">) => Promise<void> | void;
   onEditClient?: (clientId: string, client: Partial<Client>) => Promise<void> | void;
   onDeleteClient?: (clientId: string) => Promise<void> | void;
+  onBulkImportClients?: (records: BulkClientImportItem[]) => Promise<void> | void;
   leads?: SalesLead[];
   workflows?: ProjectWorkflow[];
   products?: Product[];
@@ -24,9 +26,11 @@ export default function ClientsView({
   onAddClient,
   onEditClient,
   onDeleteClient,
+  onBulkImportClients,
 }: ClientsViewProps) {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
 
   const [fullName, setFullName] = useState("");
@@ -117,7 +121,7 @@ export default function ClientsView({
             Manage customer accounts, tax credentials & billing contacts
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
@@ -128,6 +132,15 @@ export default function ClientsView({
               className="pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 w-48 font-medium"
             />
           </div>
+          {(onAddClient || onBulkImportClients) && (
+            <button
+              type="button"
+              onClick={() => setIsBulkImportOpen(true)}
+              className="px-3 py-1.5 text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg flex items-center gap-1.5 cursor-pointer shadow-3xs transition-all"
+            >
+              <Upload size={14} /> Import CSV / Sheet
+            </button>
+          )}
           {onAddClient && (
             <button
               onClick={handleOpenAdd}
@@ -320,6 +333,16 @@ export default function ClientsView({
           </div>
         </div>
       )}
+
+      {/* Bulk Import Modal */}
+      <ClientBulkImportModal
+        isOpen={isBulkImportOpen}
+        onClose={() => setIsBulkImportOpen(false)}
+        existingClients={clients}
+        onAddClient={onAddClient}
+        onEditClient={onEditClient}
+        onBulkImportClients={onBulkImportClients}
+      />
     </div>
   );
 }

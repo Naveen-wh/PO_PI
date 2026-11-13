@@ -138,3 +138,83 @@ export async function syncOperationalAction(
 
 //   return syncRecordToAppsScript(url, "CLEAR" as any, collectionKey, {}, sheetName);
 // }
+
+/**
+ * Parses a date or datetime string (ISO, YYYY-MM-DD HH:mm:ss, DD/MM/YYYY, epoch) into ms.
+ */
+export function parseRecordTimestampMs(value?: string | number | null): number {
+  if (value === undefined || value === null || value === "") return Number.NaN;
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) return Number.NaN;
+    return value < 1e12 ? value * 1000 : value;
+  }
+
+  const raw = String(value).trim();
+  if (!raw) return Number.NaN;
+
+  if (/^\d{10,13}$/.test(raw)) {
+    const num = Number(raw);
+    return raw.length === 10 ? num * 1000 : num;
+  }
+
+  const dmyMatch = raw.match(
+    /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:[\sT,]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/
+  );
+  if (dmyMatch) {
+    const day = Number(dmyMatch[1]);
+    const month = Number(dmyMatch[2]);
+    const year = Number(dmyMatch[3]);
+    const hour = Number(dmyMatch[4] || 0);
+    const minute = Number(dmyMatch[5] || 0);
+    const second = Number(dmyMatch[6] || 0);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return Date.UTC(year, month - 1, day, hour, minute, second);
+    }
+  }
+
+  const normalized = /^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(raw)
+    ? raw.replace(/\s+/, "T")
+    : raw;
+
+  const parsed = Date.parse(normalized);
+  return Number.isNaN(parsed) ? Number.NaN : parsed;
+}
+
+/**
+ * Sorts operational records (PO / PI) by Created date/timestamp descending (most recently created on top).
+ */
+export function sortRecordsByCreatedDesc<T extends Record<string, any>>(records: T[]): T[] {
+  return [...records].sort((a, b) => {
+    const aCreated = parseRecordTimestampMs(
+      a?.createdAt ?? a?.Created_at ?? a?.created_at ?? a?.createEditDate ?? a?.poDate ?? a?.piDate
+    );
+    const bCreated = parseRecordTimestampMs(
+      b?.createdAt ?? b?.Created_at ?? b?.created_at ?? b?.createEditDate ?? b?.poDate ?? b?.piDate
+    );
+
+    const aHas = !Number.isNaN(aCreated);
+    const bHas = !Number.isNaN(bCreated);
+    if (aHas && bHas && bCreated !== aCreated) {
+      return bCreated - aCreated;
+    }
+    if (aHas !== bHas) {
+      return bHas ? 1 : -1;
+    }
+
+    const aEdit = parseRecordTimestampMs(a?.createEditDate);
+    const bEdit = parseRecordTimestampMs(b?.createEditDate);
+    if (!Number.isNaN(aEdit) && !Number.isNaN(bEdit) && bEdit !== aEdit) {
+      return bEdit - aEdit;
+    }
+
+    const aDocDate = parseRecordTimestampMs(a?.poDate ?? a?.piDate);
+    const bDocDate = parseRecordTimestampMs(b?.poDate ?? b?.piDate);
+    if (!Number.isNaN(aDocDate) && !Number.isNaN(bDocDate) && bDocDate !== aDocDate) {
+      return bDocDate - aDocDate;
+    }
+
+    const aNum = String(a?.poNumber || a?.piNumber || a?.id || "");
+    const bNum = String(b?.poNumber || b?.piNumber || b?.id || "");
+    return bNum.localeCompare(aNum, undefined, { numeric: true, sensitivity: "base" });
+  });
+}

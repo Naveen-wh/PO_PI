@@ -19,8 +19,10 @@ import {
   User as UserIcon,
   Check,
   RotateCcw,
+  Upload,
 } from "lucide-react";
 import { User, SupplierMasterRecord } from "../../types";
+import SupplierBulkImportModal, { BulkSupplierImportItem } from "./SupplierBulkImportModal";
 
 interface SuppliersViewProps {
   activeUserId: string;
@@ -29,6 +31,7 @@ interface SuppliersViewProps {
   onAddSupplierMaster: (data: Omit<SupplierMasterRecord, "id" | "createdAt">) => void;
   onEditSupplierMaster: (id: string, data: Omit<SupplierMasterRecord, "id" | "createdAt">) => void;
   onDeleteSupplierMaster: (id: string) => void;
+  onBulkImportSuppliersMaster?: (records: BulkSupplierImportItem[]) => Promise<void> | void;
 }
 
 export default function SuppliersView({
@@ -38,10 +41,12 @@ export default function SuppliersView({
   onAddSupplierMaster,
   onEditSupplierMaster,
   onDeleteSupplierMaster,
+  onBulkImportSuppliersMaster,
 }: SuppliersViewProps) {
   const activeUser = users.find((u) => u.id === activeUserId);
   const isManagerOrAdmin =
     activeUser?.accessLevel === "Manager" || activeUser?.role === "Admin";
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all"); // "all", "Import", "Domestic"
@@ -182,7 +187,16 @@ export default function SuppliersView({
             Manage comprehensive supplier profiles with GSTIN, address, contact persons, import/domestic classification, and remarks.
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {isManagerOrAdmin && (
+            <button
+              type="button"
+              onClick={() => setIsBulkImportOpen(true)}
+              className="px-3 py-1.5 text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg flex items-center gap-1.5 cursor-pointer shadow-3xs transition-all"
+            >
+              <Upload size={14} /> Import CSV / Sheet
+            </button>
+          )}
           <span className="text-[11px] font-mono px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-lg font-semibold">
             Total: {suppliersMaster.length} Suppliers
           </span>
@@ -540,6 +554,16 @@ export default function SuppliersView({
           </div>
         </div>
       </div>
+
+      {/* Bulk Import Modal */}
+      <SupplierBulkImportModal
+        isOpen={isBulkImportOpen}
+        onClose={() => setIsBulkImportOpen(false)}
+        existingSuppliers={suppliersMaster}
+        onAddSupplierMaster={onAddSupplierMaster}
+        onEditSupplierMaster={onEditSupplierMaster}
+        onBulkImportSuppliersMaster={onBulkImportSuppliersMaster}
+      />
     </div>
   );
 }
