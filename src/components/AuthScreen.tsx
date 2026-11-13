@@ -12,7 +12,7 @@ import {
   createUserWithEmailAndPassword 
 } from "../firebase";
 import { syncUserProfile } from "../lib/firebaseService";
-import { Shield, Key, Mail, User as UserIcon, Briefcase, Award, Sun, Moon } from "lucide-react";
+import { Shield, Key, Mail, User as UserIcon, Sun, Moon } from "lucide-react";
 import { FontSizeToggle } from "./Utility/FontSizeToggle";
 import config from "../../firebase-applet-config.json";
 
@@ -218,8 +218,12 @@ export default function AuthScreen({ onAuthSuccess, externalError, onClearExtern
         
         {/* Header Title */}
         <div className="text-center">
-          <div className="inline-flex bg-emerald-600 text-white p-2.5 rounded-lg shadow-sm mb-3">
-            <Briefcase size={22} className="stroke-[2.5]" />
+          <div className="inline-flex items-center justify-center bg-white dark:bg-white px-3 py-1 rounded-xl border border-slate-200/80 dark:border-slate-700 shadow-xs mb-3">
+            <img
+              src="/assets/aistudio/AOL_Logo_Mark-01_64b455c0.png"
+              alt="AOL Logo"
+              className="h-12 w-auto object-contain"
+            />
           </div>
           <h2 className="text-lg font-extrabold tracking-tight text-slate-900">
             Company DR

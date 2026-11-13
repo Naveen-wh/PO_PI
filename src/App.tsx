@@ -108,8 +108,7 @@ import {
   FileSpreadsheet,
   Sun,
   Moon,
-  Loader2,
-  Briefcase
+  Loader2
 } from "lucide-react";
 
 export default function App() {
@@ -1791,9 +1790,13 @@ export default function App() {
       {/* Dynamic Header */}
       <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
         <div className="max-w-[96%] mx-auto px-3 sm:px-4 lg:px-5 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="bg-emerald-600 text-white p-1.5 rounded-md shadow-xs">
-              <Briefcase size={16} className="stroke-[2.5]" />
+          <div className="flex items-center gap-2.5">
+            <div className="bg-white dark:bg-white border border-slate-200/80 dark:border-slate-700 px-1.5 py-0.5 rounded-md shadow-xs flex items-center justify-center shrink-0">
+              <img
+                src="/assets/aistudio/AOL_Logo_Mark-01_64b455c0.png"
+                alt="AOL Logo"
+                className="h-8 w-auto object-contain"
+              />
             </div>
             <div>
               <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-50 leading-none">
