@@ -334,7 +334,7 @@ export function SearchableSupplierSelect({
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-xs font-semibold text-slate-900 group-hover:text-emerald-900">
+                        <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 group-hover:text-emerald-900 dark:group-hover:text-emerald-300">
                           {sup.name}
                         </span>
                         {sup.category && (
@@ -942,6 +942,7 @@ export default function PoView({
   const [formGst, setFormGst] = useState(0);
   const [formTotalInNum, setFormTotalInNum] = useState(0);
   const [formTotalInWord, setFormTotalInWord] = useState("");
+  const [editGstPercent, setEditGstPercent] = useState<string>("18");
 
   // Auto-generate PO Number Helper
   // const generateNextPoNumber = () => {
@@ -1135,7 +1136,7 @@ export default function PoView({
       }
     }
 
-    setEditProducts(
+    const finalItems =
       items.length > 0
         ? items
         : [
@@ -1147,9 +1148,80 @@ export default function PoView({
               rate: rec.rate1 ? String(rec.rate1) : "",
               amount: rec.amount1 || 0,
             },
-          ],
+          ];
+
+    setEditProducts(finalItems);
+
+    const normalizedCurrency =
+      !rec.currency || rec.currency === "₹"
+        ? "INR"
+        : rec.currency.toUpperCase();
+    const isInr = normalizedCurrency === "INR";
+    const computedSubTotal = Number(
+      finalItems.reduce((acc, p) => acc + (p.amount || 0), 0).toFixed(2),
     );
-    setEditingRecord({ ...rec });
+    const baseSub = Number(rec.subTotal || 0) || computedSubTotal;
+
+    if (isInr) {
+      if (baseSub > 0 && rec.gst !== undefined && rec.gst !== null) {
+        const gstNum = parseFloat(String(rec.gst)) || 0;
+        if (gstNum === 0) {
+          setEditGstPercent("0");
+        } else {
+          const approxPct = Math.round((gstNum / baseSub) * 100);
+          if ([0, 5, 12, 18, 28].includes(approxPct)) {
+            setEditGstPercent(String(approxPct));
+          } else {
+            setEditGstPercent("18");
+          }
+        }
+      } else {
+        setEditGstPercent(rec.gst === 0 ? "0" : "18");
+      }
+    } else {
+      setEditGstPercent("18");
+    }
+
+    setEditingRecord({
+      ...rec,
+      currency: normalizedCurrency,
+      subTotal: baseSub,
+    });
+  };
+
+  // Recalculate edit form values from products array, currency, and GST %
+  const recalcEditTotals = (
+    productsList: Array<{ amount: number }>,
+    recState: PoRecord,
+    gstPercentStr: string,
+  ) => {
+    const subTotal = Number(
+      productsList.reduce((acc, p) => acc + (p.amount || 0), 0).toFixed(2),
+    );
+    const curr = (recState.currency || "INR").toUpperCase();
+    const isInr = curr === "INR";
+    let gst = 0;
+    let totalInNum = subTotal;
+
+    if (isInr) {
+      const gstPercent = parseFloat(gstPercentStr) || 0;
+      gst = Number(((subTotal * gstPercent) / 100).toFixed(2));
+      totalInNum = Number((subTotal + gst).toFixed(2));
+    } else {
+      gst = 0;
+      totalInNum = subTotal;
+    }
+
+    const totalInWord = formatAmountInWords(totalInNum, curr);
+
+    setEditingRecord({
+      ...recState,
+      currency: curr,
+      subTotal,
+      gst,
+      totalInNum,
+      totalInWord,
+    });
   };
 
   // Add Product in Edit Modal (Max 7)
@@ -1171,26 +1243,7 @@ export default function PoView({
     ];
     setEditProducts(updated);
     if (editingRecord) {
-      const isInr = (editingRecord.currency || "INR").toUpperCase() === "INR";
-      const newSubTotal = Number(
-        updated.reduce((acc, p) => acc + (p.amount || 0), 0).toFixed(2),
-      );
-      const gstAmt = isInr
-        ? parseFloat(String(editingRecord.gst || 0)) || 0
-        : 0;
-      const newTotal = isInr
-        ? Number((newSubTotal + gstAmt).toFixed(2))
-        : newSubTotal;
-      setEditingRecord({
-        ...editingRecord,
-        subTotal: newSubTotal,
-        gst: gstAmt,
-        totalInNum: newTotal,
-        totalInWord: formatAmountInWords(
-          newTotal,
-          editingRecord.currency || "INR",
-        ),
-      });
+      recalcEditTotals(updated, editingRecord, editGstPercent);
     }
   };
 
@@ -1203,26 +1256,7 @@ export default function PoView({
     const updated = editProducts.filter((_, i) => i !== index);
     setEditProducts(updated);
     if (editingRecord) {
-      const isInr = (editingRecord.currency || "INR").toUpperCase() === "INR";
-      const newSubTotal = Number(
-        updated.reduce((acc, p) => acc + (p.amount || 0), 0).toFixed(2),
-      );
-      const gstAmt = isInr
-        ? parseFloat(String(editingRecord.gst || 0)) || 0
-        : 0;
-      const newTotal = isInr
-        ? Number((newSubTotal + gstAmt).toFixed(2))
-        : newSubTotal;
-      setEditingRecord({
-        ...editingRecord,
-        subTotal: newSubTotal,
-        gst: gstAmt,
-        totalInNum: newTotal,
-        totalInWord: formatAmountInWords(
-          newTotal,
-          editingRecord.currency || "INR",
-        ),
-      });
+      recalcEditTotals(updated, editingRecord, editGstPercent);
     }
   };
 
@@ -1252,26 +1286,7 @@ export default function PoView({
     setEditProducts(updated);
 
     if (editingRecord) {
-      const isInr = (editingRecord.currency || "INR").toUpperCase() === "INR";
-      const newSubTotal = Number(
-        updated.reduce((acc, p) => acc + (p.amount || 0), 0).toFixed(2),
-      );
-      const gstAmt = isInr
-        ? parseFloat(String(editingRecord.gst || 0)) || 0
-        : 0;
-      const newTotal = isInr
-        ? Number((newSubTotal + gstAmt).toFixed(2))
-        : newSubTotal;
-      setEditingRecord({
-        ...editingRecord,
-        subTotal: newSubTotal,
-        gst: gstAmt,
-        totalInNum: newTotal,
-        totalInWord: formatAmountInWords(
-          newTotal,
-          editingRecord.currency || "INR",
-        ),
-      });
+      recalcEditTotals(updated, editingRecord, editGstPercent);
     }
   };
 
@@ -2236,7 +2251,7 @@ const handleGeneratePdfClick = async (rec: PoRecord) => {
       <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
         <div className="overflow-x-auto max-h-[640px] scrollbar-thin">
           <table className="w-full text-left border-collapse text-xs">
-            <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200 font-mono text-[11px] uppercase tracking-wider text-slate-600">
+            <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700 font-mono text-[11px] uppercase tracking-wider text-slate-600 dark:text-slate-200">
               <tr>
                 <th className="py-2.5 px-3 font-semibold text-slate-500 w-10">
                   #
@@ -3941,24 +3956,14 @@ const handleGeneratePdfClick = async (rec: PoRecord) => {
                       Currency
                     </label>
                     <select
-                      value={editingRecord.currency || "INR"}
+                      value={(editingRecord.currency || "INR").toUpperCase()}
                       onChange={(e) => {
                         const newCurr = e.target.value;
-                        const isInr = newCurr.toUpperCase() === "INR";
-                        const sub = editingRecord.subTotal || 0;
-                        const gst = isInr
-                          ? parseFloat(String(editingRecord.gst || 0)) || 0
-                          : 0;
-                        const total = isInr
-                          ? Number((sub + gst).toFixed(2))
-                          : sub;
-                        setEditingRecord({
+                        const nextRec = {
                           ...editingRecord,
                           currency: newCurr,
-                          gst: gst,
-                          totalInNum: total,
-                          totalInWord: formatAmountInWords(total, newCurr),
-                        });
+                        };
+                        recalcEditTotals(editProducts, nextRec, editGstPercent);
                       }}
                       className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg font-mono font-semibold"
                     >
@@ -3980,31 +3985,52 @@ const handleGeneratePdfClick = async (rec: PoRecord) => {
                     />
                   </div>
 
-                  {editingRecord.currency === "INR" ? (
+                  {(editingRecord.currency || "INR").toUpperCase() === "INR" ? (
                     <div>
                       <label className="block text-slate-600 font-medium mb-1">
-                        GST Amount
+                        GST (%)
                       </label>
-                      <input
-                        type="number"
-                        step="any"
-                        value={editingRecord.gst || 0}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value) || 0;
-                          const sub = editingRecord.subTotal || 0;
-                          const total = Number((sub + val).toFixed(2));
-                          setEditingRecord({
-                            ...editingRecord,
-                            gst: val,
-                            totalInNum: total,
-                            totalInWord: formatAmountInWords(
-                              total,
-                              editingRecord.currency || "INR",
-                            ),
-                          });
-                        }}
-                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg font-mono font-medium"
-                      />
+                      <div className="flex gap-2">
+                        <select
+                          value={editGstPercent}
+                          onChange={(e) => {
+                            setEditGstPercent(e.target.value);
+                            recalcEditTotals(
+                              editProducts,
+                              editingRecord,
+                              e.target.value,
+                            );
+                          }}
+                          className="w-24 px-2 py-2 bg-white border border-slate-200 rounded-lg font-mono"
+                        >
+                          <option value="18">18%</option>
+                          <option value="12">12%</option>
+                          <option value="5">5%</option>
+                          <option value="0">0%</option>
+                          <option value="28">28%</option>
+                        </select>
+                        <input
+                          type="number"
+                          step="any"
+                          placeholder="GST Amount"
+                          value={editingRecord.gst ?? 0}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            const sub = editingRecord.subTotal || 0;
+                            const total = Number((sub + val).toFixed(2));
+                            setEditingRecord({
+                              ...editingRecord,
+                              gst: val,
+                              totalInNum: total,
+                              totalInWord: formatAmountInWords(
+                                total,
+                                editingRecord.currency || "INR",
+                              ),
+                            });
+                          }}
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg font-mono font-medium focus:ring-1 focus:ring-emerald-500"
+                        />
+                      </div>
                     </div>
                   ) : null}
 

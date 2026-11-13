@@ -590,20 +590,20 @@ export default function TeamDirectoryView({
 
       {/* Pending Account Requests Banner for Admins */}
       {isAdmin && pendingUsers.length > 0 && (
-        <div className="bg-amber-50/80 border border-amber-300 rounded-xl p-4 shadow-sm space-y-3">
+        <div className="bg-amber-50/80 dark:bg-amber-950/35 border border-amber-300 dark:border-amber-700/50 rounded-xl p-4 shadow-sm space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-amber-500 text-white rounded-lg shadow-xs">
                 <Clock size={16} />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                <h4 className="text-xs font-bold text-amber-950 dark:text-amber-300 flex items-center gap-1.5">
                   Pending Account Registration Requests
-                  <span className="bg-amber-200 text-amber-900 text-[10px] px-2 py-0.2 rounded-full font-mono font-extrabold">
+                  <span className="bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 text-[10px] px-2 py-0.2 rounded-full font-mono font-extrabold">
                     {pendingUsers.length} Pending
                   </span>
                 </h4>
-                <p className="text-[10px] text-amber-800 font-medium">
+                <p className="text-[10px] text-amber-800 dark:text-amber-200/80 font-medium">
                   These users registered/logged in and require role & department configuration before they can access the portal.
                 </p>
               </div>
@@ -677,7 +677,7 @@ export default function TeamDirectoryView({
                   onClick={() => setSelectedUserId(admin.id)}
                   className={`w-full flex items-center justify-between p-2 rounded-md border transition-all text-left cursor-pointer ${
                     selectedUserId === admin.id
-                      ? "bg-purple-950/5 border-purple-500"
+                      ? "bg-purple-950/5 dark:bg-purple-950/40 border-purple-500"
                       : "bg-slate-50 border-slate-200 hover:bg-slate-100/50"
                   }`}
                 >
@@ -711,7 +711,7 @@ export default function TeamDirectoryView({
                           onClick={() => setSelectedUserId(srMgr.id)}
                           className={`w-full flex items-center justify-between p-1.5 rounded-md border transition-all text-left cursor-pointer ${
                             selectedUserId === srMgr.id
-                              ? "bg-emerald-950/5 border-emerald-500"
+                              ? "bg-emerald-950/5 dark:bg-emerald-950/40 border-emerald-500"
                               : "bg-slate-50/40 border-slate-200 hover:bg-slate-100/30"
                           }`}
                         >
@@ -744,7 +744,7 @@ export default function TeamDirectoryView({
                                 onClick={() => setSelectedUserId(mgr.id)}
                                 className={`w-full flex items-center justify-between p-1.5 rounded-md border transition-all text-left cursor-pointer ${
                                   selectedUserId === mgr.id
-                                    ? "bg-teal-950/5 border-teal-500"
+                                    ? "bg-teal-950/5 dark:bg-teal-950/40 border-teal-500"
                                     : "bg-slate-50/40 border-slate-200 hover:bg-slate-100/30"
                                 }`}
                               >
@@ -776,7 +776,7 @@ export default function TeamDirectoryView({
                                       onClick={() => setSelectedUserId(tl.id)}
                                       className={`w-full flex items-center justify-between p-1.5 rounded-md border transition-all text-left cursor-pointer ${
                                         selectedUserId === tl.id
-                                          ? "bg-cyan-950/5 border-cyan-500"
+                                          ? "bg-cyan-950/5 dark:bg-cyan-950/40 border-cyan-500"
                                           : "bg-slate-50/40 border-slate-200 hover:bg-slate-100/30"
                                       }`}
                                     >
@@ -1207,11 +1207,11 @@ export default function TeamDirectoryView({
                     <div className="mt-3 pt-3 border-t border-slate-200 bg-white p-3 rounded-lg overflow-x-auto">
                       <table className="w-full text-left text-xs border-collapse">
                         <thead>
-                          <tr className="border-b border-slate-200 text-[10px] font-mono uppercase text-slate-400">
-                            <th className="py-1 px-2">Tab / Sub-Tab</th>
-                            <th className="py-1 px-4 text-center">View</th>
-                            <th className="py-1 px-4 text-center">Add</th>
-                            <th className="py-1 px-4 text-center">Edit</th>
+                          <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-[10px] font-mono uppercase text-slate-500 dark:text-slate-200">
+                            <th className="py-1.5 px-2">Tab / Sub-Tab</th>
+                            <th className="py-1.5 px-4 text-center">View</th>
+                            <th className="py-1.5 px-4 text-center">Add</th>
+                            <th className="py-1.5 px-4 text-center">Edit</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -1219,7 +1219,7 @@ export default function TeamDirectoryView({
                             const isParentChecked = getTabPermission(team, tab.id, "view");
                             return (
                               <React.Fragment key={tab.id}>
-                                <tr className="bg-slate-50/50 font-bold text-slate-800">
+                                <tr className="bg-slate-50/50 dark:bg-slate-800/60 font-bold text-slate-800 dark:text-slate-100">
                                   <td className="py-1.5 px-2">{tab.label}</td>
                                   <td className="px-4 py-1.5 text-center">
                                     <input

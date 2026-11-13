@@ -188,7 +188,7 @@ export default function ListManagementView({
   return (
     <div className="space-y-4">
       {/* Sub-tab selection */}
-      <div className="flex border-b border-slate-200 gap-1 overflow-x-auto pb-0.5 scrollbar-thin whitespace-nowrap">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-1 overflow-x-auto pb-0.5 scrollbar-thin whitespace-nowrap">
         {filteredSubTabs.map((tab) => {
           const Icon = tab.icon;
           const active = activeSubTab === tab.id;
@@ -197,10 +197,12 @@ export default function ListManagementView({
               key={tab.id}
               onClick={() => setActiveSubTab(tab.id)}
               className={`flex items-center gap-1.5 px-4 py-2 text-[10px] font-bold font-mono uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
-                active ? "border-emerald-600 text-emerald-700" : "border-transparent text-slate-400 hover:text-slate-600"
+                active
+                  ? "border-emerald-600 text-emerald-700 dark:border-emerald-400 dark:text-emerald-400"
+                  : "border-transparent text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
-              <Icon size={12} className={active ? "text-emerald-600" : "text-slate-400"} />
+              <Icon size={12} className={active ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"} />
               {tab.label}
             </button>
           );
@@ -267,9 +269,9 @@ export default function ListManagementView({
       )}
       {activeSubTab === "dropdowns" && (
         <div className="space-y-4 animate-fade-in">
-          <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-200">
-            <h2 className="text-xs font-bold text-slate-500 uppercase font-mono tracking-wider mb-1">List Dropdowns Configuration</h2>
-            <p className="text-xs text-slate-500">Configure global choices for Product Categories, Product Groups, Manufacturers, Freight Terms, Transporters, Warehouses, Dispatch Locations, AOL Branches, Suppliers, and Clearing Cats.</p>
+          <div className="bg-slate-50/50 dark:bg-slate-800/80 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+            <h2 className="text-xs font-bold text-slate-700 dark:text-slate-100 uppercase font-mono tracking-wider mb-1">List Dropdowns Configuration</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Configure global choices for Product Categories, Product Groups, Manufacturers, Freight Terms, Transporters, Warehouses, Dispatch Locations, AOL Branches, Suppliers, and Clearing Cats.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <LocalDropdownSection

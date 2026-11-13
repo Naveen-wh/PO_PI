@@ -217,13 +217,15 @@ export default function ProductsView({
   return (
     <div id="products-catalog-container" className="flex flex-col gap-4">
       {/* Sub-tab selection */}
-      <div className="flex gap-2 border-b border-slate-200 overflow-x-auto whitespace-nowrap pb-0.5 scrollbar-thin">
+      <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800 overflow-x-auto whitespace-nowrap pb-0.5 scrollbar-thin">
         {filteredSubSubTabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveSubTab(tab.id)}
             className={`text-xs font-bold px-3 py-1.5 cursor-pointer transition-all ${
-              activeSubTab === tab.id ? "border-b-2 border-emerald-600 text-emerald-600" : "text-slate-500 hover:text-slate-700"
+              activeSubTab === tab.id
+                ? "border-b-2 border-emerald-600 text-emerald-600 dark:border-emerald-400 dark:text-emerald-400"
+                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
             }`}
           >
             {tab.label}
@@ -344,7 +346,7 @@ export default function ProductsView({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/75 border-b border-slate-100 text-[10px] uppercase font-bold font-mono tracking-wider text-slate-400">
+              <tr className="bg-slate-50/75 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 text-[10px] uppercase font-bold font-mono tracking-wider text-slate-500 dark:text-slate-200">
                 <th className="py-2.5 px-4">Product Name</th>
                 <th className="py-2.5 px-3">HSN Code</th>
                 <th className="py-2.5 px-3">Category</th>

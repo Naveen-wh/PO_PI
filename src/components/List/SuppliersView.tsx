@@ -172,18 +172,18 @@ export default function SuppliersView({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Information Header */}
-      <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-slate-50/70 dark:bg-slate-800/80 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xs font-bold text-slate-800 uppercase font-mono tracking-wider flex items-center gap-2">
-            <Building2 className="text-emerald-600" size={16} />
+          <h2 className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase font-mono tracking-wider flex items-center gap-2">
+            <Building2 className="text-emerald-600 dark:text-emerald-400" size={16} />
             Suppliers Master Directory
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Manage comprehensive supplier profiles with GSTIN, address, contact persons, import/domestic classification, and remarks.
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[11px] font-mono px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-semibold">
+          <span className="text-[11px] font-mono px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-lg font-semibold">
             Total: {suppliersMaster.length} Suppliers
           </span>
         </div>
@@ -390,7 +390,7 @@ export default function SuppliersView({
         {/* Table Column (7 cols on lg) */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-3xs overflow-hidden lg:col-span-7 flex flex-col">
           {/* Search and Filters Header */}
-          <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/70 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
               <input
@@ -437,7 +437,7 @@ export default function SuppliersView({
             ) : (
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-100/70 border-b border-slate-200 text-[10px] font-bold font-mono uppercase tracking-wider text-slate-600 sticky top-0 z-10">
+                  <tr className="bg-slate-100/70 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-[10px] font-bold font-mono uppercase tracking-wider text-slate-600 dark:text-slate-200 sticky top-0 z-10">
                     <th className="p-3">Supplier Name</th>
                     <th className="p-3">GSTIN</th>
                     <th className="p-3">Type</th>

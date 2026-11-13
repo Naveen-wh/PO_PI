@@ -98,17 +98,17 @@ export default function PendingApprovalScreen({
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between antialiased font-sans text-slate-800">
       {/* Top Navbar */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-2xs">
+      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-2xs">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="bg-emerald-600 text-white p-1.5 rounded-md shadow-xs">
               <Briefcase size={16} className="stroke-[2.5]" />
             </div>
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-slate-900 leading-none">
+              <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-50 leading-none">
                 Company DR Portal
               </h1>
-              <p className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-wider mt-0.5">
+              <p className="text-[9px] font-mono font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-0.5">
                 Hierarchical Access Clearance
               </p>
             </div>
@@ -133,7 +133,7 @@ export default function PendingApprovalScreen({
 
             <button
               onClick={onSignOut}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-md transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/70 border border-rose-200 dark:border-rose-800 rounded-md transition cursor-pointer"
             >
               <LogOut size={13} />
               Sign Out

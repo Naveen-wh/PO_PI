@@ -283,7 +283,7 @@ function SearchableClientSelect({
                     }`}
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-semibold text-slate-900 group-hover:text-emerald-900">
+                      <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 group-hover:text-emerald-900 dark:group-hover:text-emerald-300">
                         {cl.companyName}
                       </div>
                       {(cl.fullName || cl.phone || cl.address) && (
@@ -546,12 +546,9 @@ export default function PiView({
 
   const [formFreightCharges, setFormFreightCharges] = useState<string>("0");
   const [formGstPercent, setFormGstPercent] = useState<string>("18");
-  const [formTcsApplicableOrNot, setFormTcsApplicableOrNot] =
-    useState<string>("No");
 
   const [formSubTotal, setFormSubTotal] = useState<number>(0);
   const [formGst, setFormGst] = useState<number>(0);
-  const [formTcsAmount, setFormTcsAmount] = useState<number>(0);
   const [formTotalInNum, setFormTotalInNum] = useState<number>(0);
   const [formAmountInWord, setFormAmountInWord] = useState<string>(
     "Rupees Zero Only",
@@ -562,7 +559,6 @@ export default function PiView({
     prodList: PiProductSlotForm[],
     freightStr: string,
     gstPctStr: string,
-    tcsFlag: string,
   ) => {
     const subTotal = Number(
       prodList.reduce((acc, p) => acc + (p.amount || 0), 0).toFixed(2),
@@ -571,17 +567,10 @@ export default function PiView({
     const gstPct = parseFloat(gstPctStr) || 0;
     const taxableBase = subTotal + freight;
     const gstAmount = Number(((taxableBase * gstPct) / 100).toFixed(2));
-    const isTcsYes = tcsFlag.trim().toLowerCase() === "yes";
-    const tcsAmount = isTcsYes
-      ? Number((((taxableBase + gstAmount) * 0.1) / 100).toFixed(2))
-      : 0;
-    const grandTotal = Number(
-      (taxableBase + gstAmount + tcsAmount).toFixed(2),
-    );
+    const grandTotal = Number((taxableBase + gstAmount).toFixed(2));
 
     setFormSubTotal(subTotal);
     setFormGst(gstAmount);
-    setFormTcsAmount(tcsAmount);
     setFormTotalInNum(grandTotal);
     setFormAmountInWord(formatAmountInWords(grandTotal, "INR"));
   };
@@ -604,12 +593,7 @@ export default function PiView({
 
     updated[idx] = target;
     setFormProducts(updated);
-    recalcCreateTotals(
-      updated,
-      formFreightCharges,
-      formGstPercent,
-      formTcsApplicableOrNot,
-    );
+    recalcCreateTotals(updated, formFreightCharges, formGstPercent);
   };
 
   const handleAddCreateProduct = () => {
@@ -625,12 +609,7 @@ export default function PiView({
     if (formProducts.length <= 1) return;
     const updated = formProducts.filter((_, i) => i !== idx);
     setFormProducts(updated);
-    recalcCreateTotals(
-      updated,
-      formFreightCharges,
-      formGstPercent,
-      formTcsApplicableOrNot,
-    );
+    recalcCreateTotals(updated, formFreightCharges, formGstPercent);
   };
 
   // ==================== CREATE AUTO-FILL HANDLERS ====================
@@ -784,8 +763,7 @@ export default function PiView({
     setFormProducts(initProds);
     setFormFreightCharges("0");
     setFormGstPercent("18");
-    setFormTcsApplicableOrNot("No");
-    recalcCreateTotals(initProds, "0", "18", "No");
+    recalcCreateTotals(initProds, "0", "18");
     setIsCreateModalOpen(true);
   };
 
@@ -840,21 +818,13 @@ export default function PiView({
     const gstPct = parseFloat(gstPctStr) || 0;
     const taxableBase = subTotal + freight;
     const gstAmount = Number(((taxableBase * gstPct) / 100).toFixed(2));
-    const isTcsYes =
-      (recState.tcsApplicableOrNot || "").trim().toLowerCase() === "yes";
-    const tcsAmount = isTcsYes
-      ? Number((((taxableBase + gstAmount) * 0.1) / 100).toFixed(2))
-      : 0;
-    const totalInNum = Number(
-      (taxableBase + gstAmount + tcsAmount).toFixed(2),
-    );
+    const totalInNum = Number((taxableBase + gstAmount).toFixed(2));
     const amountInWord = formatAmountInWords(totalInNum, "INR");
 
     setEditingRecord({
       ...recState,
       subTotal,
       gst: gstAmount,
-      tcsAmount,
       totalInNum,
       amountInWord,
     });
@@ -1064,13 +1034,11 @@ export default function PiView({
       amount4: formProducts[3] ? formProducts[3].amount || 0 : undefined,
 
       freightCharges: freightVal,
-      tcsApplicableOrNot: formTcsApplicableOrNot,
       deliveryNoteTerms: formDeliveryNoteTerms.trim(),
       partyRemark: formPartyRemark.trim(),
 
       subTotal: formSubTotal,
       gst: formGst,
-      tcsAmount: formTcsAmount,
       totalInNum: formTotalInNum,
       amountInWord:
         formAmountInWord.trim() || formatAmountInWords(formTotalInNum, "INR"),
@@ -1111,14 +1079,7 @@ export default function PiView({
     );
     const freight = parseFloat(String(editingRecord.freightCharges || 0)) || 0;
     const gst = parseFloat(String(editingRecord.gst || 0)) || 0;
-    const isTcsYes =
-      (editingRecord.tcsApplicableOrNot || "").trim().toLowerCase() === "yes";
-    const tcsAmount = isTcsYes
-      ? parseFloat(String(editingRecord.tcsAmount || 0)) || 0
-      : 0;
-    const totalInNum = Number(
-      (subTotal + freight + gst + tcsAmount).toFixed(2),
-    );
+    const totalInNum = Number((subTotal + freight + gst).toFixed(2));
     const amountInWord = formatAmountInWords(totalInNum, "INR");
 
     const updatedRec: PiRecord = {
@@ -1126,7 +1087,6 @@ export default function PiView({
       subTotal,
       freightCharges: freight,
       gst,
-      tcsAmount,
       totalInNum,
       amountInWord,
       createEditDate: today,
@@ -1602,7 +1562,7 @@ export default function PiView({
       <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
         <div className="overflow-x-auto max-h-[640px] scrollbar-thin">
           <table className="w-full text-left border-collapse text-xs">
-            <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200 font-mono text-[11px] uppercase tracking-wider text-slate-600">
+            <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700 font-mono text-[11px] uppercase tracking-wider text-slate-600 dark:text-slate-200">
               <tr>
                 <th className="py-2.5 px-3 font-semibold text-slate-500 w-10">
                   #
@@ -1646,9 +1606,6 @@ export default function PiView({
                 <th className="py-2.5 px-3 font-semibold text-slate-700 text-right">
                   GST (₹)
                 </th>
-                <th className="py-2.5 px-3 font-semibold text-slate-700 text-center">
-                  TCS
-                </th>
                 <th className="py-2.5 px-3 font-semibold text-slate-700 text-right">
                   Grand Total (₹)
                 </th>
@@ -1666,7 +1623,7 @@ export default function PiView({
             <tbody className="divide-y divide-slate-100">
               {filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={19} className="py-12 text-center text-slate-400">
+                  <td colSpan={18} className="py-12 text-center text-slate-400">
                     <FileSpreadsheet
                       className="mx-auto mb-2 opacity-30 text-slate-400"
                       size={32}
@@ -1771,19 +1728,6 @@ export default function PiView({
                       </td>
                       <td className="py-2 px-3 font-mono text-amber-700 text-right whitespace-nowrap">
                         ₹ {formatNumberForCurrency(rec.gst || 0, "INR", 2, 2)}
-                      </td>
-                      <td className="py-2 px-3 text-center whitespace-nowrap">
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                            (rec.tcsApplicableOrNot || "")
-                              .trim()
-                              .toLowerCase() === "yes"
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-slate-100 text-slate-600"
-                          }`}
-                        >
-                          {rec.tcsApplicableOrNot || "No"}
-                        </span>
                       </td>
                       <td className="py-2 px-3 font-mono font-extrabold text-purple-900 text-right whitespace-nowrap">
                         ₹{" "}
@@ -1923,7 +1867,6 @@ export default function PiView({
                       maximumFractionDigits: 2,
                     })}
                   </td>
-                  <td></td>
                   <td className="py-2.5 px-3 text-right text-purple-900">
                     ₹
                     {totalAmount.toLocaleString("en-IN", {
@@ -2532,11 +2475,11 @@ export default function PiView({
                 )}
               </div>
 
-              {/* SECTION 5: FREIGHT, TCS & INR TOTALS (NO CURRENCY FIELD) */}
+              {/* SECTION 5: FREIGHT & INR TOTALS (NO CURRENCY FIELD) */}
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                 <div className="flex items-center gap-2 text-slate-700 font-bold font-mono text-[11px] uppercase tracking-wider">
                   <CreditCard size={14} className="text-emerald-600" />
-                  5. Freight, TCS & INR Totals (INR Only)
+                  5. Freight & INR Totals (INR Only)
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -2568,7 +2511,6 @@ export default function PiView({
                           formProducts,
                           e.target.value,
                           formGstPercent,
-                          formTcsApplicableOrNot,
                         );
                       }}
                       className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg font-mono font-medium focus:ring-1 focus:ring-emerald-500"
@@ -2588,7 +2530,6 @@ export default function PiView({
                             formProducts,
                             formFreightCharges,
                             e.target.value,
-                            formTcsApplicableOrNot,
                           );
                         }}
                         className="w-24 px-2 py-2 bg-white border border-slate-200 rounded-lg font-mono"
@@ -2605,12 +2546,8 @@ export default function PiView({
                           setFormGst(gstVal);
                           const freight =
                             parseFloat(formFreightCharges) || 0;
-                          const isTcsYes =
-                            formTcsApplicableOrNot.trim().toLowerCase() ===
-                            "yes";
-                          const tcs = isTcsYes ? formTcsAmount : 0;
                           const total = Number(
-                            (formSubTotal + freight + gstVal + tcs).toFixed(2),
+                            (formSubTotal + freight + gstVal).toFixed(2),
                           );
                           setFormTotalInNum(total);
                           setFormAmountInWord(
@@ -2621,60 +2558,6 @@ export default function PiView({
                       />
                     </div>
                   </div>
-
-                  <div className="hidden">
-                    <label className="block text-slate-600 font-medium mb-1">
-                      TCS Applicable Or Not
-                    </label>
-                    <select
-                      value={formTcsApplicableOrNot}
-                      onChange={(e) => {
-                        setFormTcsApplicableOrNot(e.target.value);
-                        recalcCreateTotals(
-                          formProducts,
-                          formFreightCharges,
-                          formGstPercent,
-                          e.target.value,
-                        );
-                      }}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg font-medium focus:ring-1 focus:ring-emerald-500"
-                    >
-                      <option value="No">No</option>
-                      <option value="Yes">Yes (0.1%)</option>
-                    </select>
-                  </div>
-
-                  {formTcsApplicableOrNot.trim().toLowerCase() === "yes" && (
-                    <div>
-                      <label className="block text-slate-600 font-medium mb-1">
-                        TCS Amount (₹)
-                      </label>
-                      <input
-                        type="number"
-                        step="any"
-                        value={formTcsAmount}
-                        onChange={(e) => {
-                          const tcsVal = parseFloat(e.target.value) || 0;
-                          setFormTcsAmount(tcsVal);
-                          const freight =
-                            parseFloat(formFreightCharges) || 0;
-                          const total = Number(
-                            (
-                              formSubTotal +
-                              freight +
-                              formGst +
-                              tcsVal
-                            ).toFixed(2),
-                          );
-                          setFormTotalInNum(total);
-                          setFormAmountInWord(
-                            formatAmountInWords(total, "INR"),
-                          );
-                        }}
-                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg font-mono font-medium focus:ring-1 focus:ring-emerald-500"
-                      />
-                    </div>
-                  )}
 
                   <div>
                     <label className="block text-slate-600 font-medium mb-1">
@@ -3325,11 +3208,11 @@ export default function PiView({
                 </div>
               </div>
 
-              {/* SECTION 5: FREIGHT, TCS & INR TOTALS */}
+              {/* SECTION 5: FREIGHT & INR TOTALS */}
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                 <div className="flex items-center gap-2 text-slate-700 font-bold font-mono text-[11px] uppercase tracking-wider">
                   <CreditCard size={14} className="text-amber-600" />
-                  5. Freight, TCS & INR Totals (INR Only)
+                  5. Freight & INR Totals (INR Only)
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -3393,15 +3276,8 @@ export default function PiView({
                           const gstVal = parseFloat(e.target.value) || 0;
                           const sub = editingRecord.subTotal || 0;
                           const freight = editingRecord.freightCharges || 0;
-                          const isTcsYes =
-                            (editingRecord.tcsApplicableOrNot || "")
-                              .trim()
-                              .toLowerCase() === "yes";
-                          const tcs = isTcsYes
-                            ? editingRecord.tcsAmount || 0
-                            : 0;
                           const total = Number(
-                            (sub + freight + gstVal + tcs).toFixed(2),
+                            (sub + freight + gstVal).toFixed(2),
                           );
                           setEditingRecord({
                             ...editingRecord,
@@ -3414,57 +3290,6 @@ export default function PiView({
                       />
                     </div>
                   </div>
-
-                  <div className="hidden">
-                    <label className="block text-slate-600 font-medium mb-1">
-                      TCS Applicable Or Not
-                    </label>
-                    <select
-                      value={editingRecord.tcsApplicableOrNot || "No"}
-                      onChange={(e) => {
-                        const nextRec = {
-                          ...editingRecord,
-                          tcsApplicableOrNot: e.target.value,
-                        };
-                        recalcEditTotals(editProducts, nextRec, editGstPercent);
-                      }}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg font-medium"
-                    >
-                      <option value="No">No</option>
-                      <option value="Yes">Yes (0.1%)</option>
-                    </select>
-                  </div>
-
-                  {(editingRecord.tcsApplicableOrNot || "")
-                    .trim()
-                    .toLowerCase() === "yes" && (
-                    <div>
-                      <label className="block text-slate-600 font-medium mb-1">
-                        TCS Amount (₹)
-                      </label>
-                      <input
-                        type="number"
-                        step="any"
-                        value={editingRecord.tcsAmount ?? 0}
-                        onChange={(e) => {
-                          const tcsVal = parseFloat(e.target.value) || 0;
-                          const sub = editingRecord.subTotal || 0;
-                          const freight = editingRecord.freightCharges || 0;
-                          const gstVal = editingRecord.gst || 0;
-                          const total = Number(
-                            (sub + freight + gstVal + tcsVal).toFixed(2),
-                          );
-                          setEditingRecord({
-                            ...editingRecord,
-                            tcsAmount: tcsVal,
-                            totalInNum: total,
-                            amountInWord: formatAmountInWords(total, "INR"),
-                          });
-                        }}
-                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg font-mono font-medium"
-                      />
-                    </div>
-                  )}
 
                   <div>
                     <label className="block text-slate-600 font-medium mb-1">
@@ -3849,21 +3674,6 @@ export default function PiView({
                       )}
                     </span>
                   </div>
-                  <div className="flex justify-between text-slate-700">
-                    <span>
-                      TCS Applicable ({viewingRecord.tcsApplicableOrNot || "No"}
-                      ):
-                    </span>
-                    <span className="font-semibold">
-                      ₹{" "}
-                      {formatNumberForCurrency(
-                        viewingRecord.tcsAmount || 0,
-                        "INR",
-                        2,
-                        2,
-                      )}
-                    </span>
-                  </div>
                   <div className="flex justify-between border-t border-purple-200 pt-1.5 text-sm font-extrabold text-purple-950">
                     <span>Grand Total (INR):</span>
                     <span>
@@ -4026,8 +3836,6 @@ export function normalizePiRow(row: any, defaultUserName: string): PiRecord {
 
   const freightChargesVal =
     parseFloat(row["Freight Charges"] ?? row.freightCharges) || 0;
-  const tcsApplicableVal =
-    row["TCS Applicable Or Not"] || row.tcsApplicableOrNot || "No";
   const deliveryNoteTermsVal =
     row["Terms of Delivery or Delivery Note"] || row.deliveryNoteTerms || "";
   const partyRemarkVal =
@@ -4035,10 +3843,9 @@ export function normalizePiRow(row: any, defaultUserName: string): PiRecord {
 
   const subTotalVal = parseFloat(row["Sub Total"] ?? row.subTotal) || 0;
   const gstVal = parseFloat(row["GST"] ?? row.gst) || 0;
-  const tcsAmountVal = parseFloat(row["TCS Amount"] ?? row.tcsAmount) || 0;
   const totalInNumVal =
     parseFloat(row["Total (In Num)"] ?? row.totalInNum) ||
-    subTotalVal + freightChargesVal + gstVal + tcsAmountVal;
+    subTotalVal + freightChargesVal + gstVal;
   const amountInWordVal =
     row["Amount in Word"] ||
     row.amountInWord ||
@@ -4104,12 +3911,10 @@ export function normalizePiRow(row: any, defaultUserName: string): PiRecord {
     amount1: amount1Val,
 
     freightCharges: freightChargesVal,
-    tcsApplicableOrNot: tcsApplicableVal,
     deliveryNoteTerms: deliveryNoteTermsVal,
     partyRemark: partyRemarkVal,
     subTotal: subTotalVal,
     gst: gstVal,
-    tcsAmount: tcsAmountVal,
     totalInNum: totalInNumVal,
     amountInWord: amountInWordVal,
 

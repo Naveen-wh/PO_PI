@@ -1078,12 +1078,10 @@ export default function App() {
       "Amount 4": rec.amount4 ?? "",
 
       "Freight Charges": rec.freightCharges ?? 0,
-      "TCS Applicable Or Not": rec.tcsApplicableOrNot || "No",
       "Terms of Delivery or Delivery Note": rec.deliveryNoteTerms || "",
       "Any Note or Remark for the party": rec.partyRemark || "",
       "Sub Total": rec.subTotal || 0,
       GST: rec.gst || 0,
-      "TCS Amount": rec.tcsAmount ?? 0,
       "Total (In Num)": rec.totalInNum || 0,
       "Amount in Word": rec.amountInWord || "",
       "Created By": rec.createdBy || "",
@@ -1791,17 +1789,17 @@ export default function App() {
   return (
     <div className="bg-[#f8fafc] min-h-screen text-slate-800 antialiased font-sans flex flex-col">
       {/* Dynamic Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
+      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
         <div className="max-w-[96%] mx-auto px-3 sm:px-4 lg:px-5 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="bg-emerald-600 text-white p-1.5 rounded-md shadow-xs">
               <Briefcase size={16} className="stroke-[2.5]" />
             </div>
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-slate-900 leading-none">
+              <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-50 leading-none">
                 Company Management Portal
               </h1>
-              <p className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-wider mt-0.5">
+              <p className="text-[9px] font-mono font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-0.5">
                 Hierarchical Role & Permission Matrix Console
               </p>
             </div>
@@ -1828,18 +1826,18 @@ export default function App() {
             <FontSizeToggle idPrefix="header" />
 
             {/* Connected Authenticated Profile Pill */}
-            <div className="flex items-center gap-2 bg-slate-50 border border-slate-250 p-1 pl-1.5 pr-2.5 rounded-md shadow-2xs">
+            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-250 dark:border-slate-700 p-1 pl-1.5 pr-2.5 rounded-md shadow-2xs">
               <img
                 src={activeUser.avatarUrl || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=60"}
                 alt={activeUser.name}
-                className="w-6 h-6 rounded-md object-cover border border-slate-200"
+                className="w-6 h-6 rounded-md object-cover border border-slate-200 dark:border-slate-600"
                 referrerPolicy="no-referrer"
               />
               <div className="min-w-0">
-                <span className="text-[10px] font-bold text-slate-900 leading-none block">
+                <span className="text-[10px] font-bold text-slate-900 dark:text-slate-100 leading-none block">
                   {activeUser.name}
                 </span>
-                <span className="text-[8px] font-mono text-emerald-600 font-bold block mt-0.5">
+                <span className="text-[8px] font-mono text-emerald-600 dark:text-emerald-400 font-bold block mt-0.5">
                   {activeUser.role} • {activeUser.accessLevel}
                 </span>
               </div>
@@ -1848,7 +1846,7 @@ export default function App() {
             {/* Logout trigger */}
             <button
               onClick={handleSignOut}
-              className="flex items-center justify-center text-slate-400 hover:text-rose-600 p-1.5 rounded border border-transparent hover:border-rose-100 hover:bg-rose-50 transition cursor-pointer"
+              className="flex items-center justify-center text-slate-400 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 p-1.5 rounded border border-transparent hover:border-rose-100 dark:hover:border-rose-800/70 hover:bg-rose-50 dark:hover:bg-rose-950/60 transition cursor-pointer"
               title="Sign Out of Portal"
             >
               <LogOut size={14} />
@@ -1861,7 +1859,7 @@ export default function App() {
       <main className="flex-1 max-w-[96%] w-full mx-auto px-3 sm:px-4 lg:px-5 py-3">
         
         {/* Tab Selection Row */}
-        <div className="flex border-b border-slate-200/85 mb-3 overflow-x-auto gap-1 pb-0.5 scrollbar-thin">
+        <div className="flex border-b border-slate-200/85 dark:border-slate-800 mb-3 overflow-x-auto gap-1 pb-0.5 scrollbar-thin">
           {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -1872,11 +1870,11 @@ export default function App() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold font-mono uppercase tracking-wider border-b-2 transition-all whitespace-nowrap -mb-0.5 cursor-pointer ${
                   active
-                    ? "border-emerald-600 text-emerald-700"
-                    : "border-transparent text-slate-400 hover:text-slate-600"
+                    ? "border-emerald-600 text-emerald-700 dark:border-emerald-400 dark:text-emerald-400"
+                    : "border-transparent text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
                 }`}
               >
-                <Icon size={12} className={active ? "text-emerald-600" : "text-slate-400"} />
+                <Icon size={12} className={active ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"} />
                 {tab.label}
               </button>
             );

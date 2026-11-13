@@ -195,18 +195,18 @@ export default function GodownsView({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Information Header */}
-      <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-slate-50/70 dark:bg-slate-800/80 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xs font-bold text-slate-800 uppercase font-mono tracking-wider flex items-center gap-2">
-            <Warehouse className="text-emerald-600" size={16} />
+          <h2 className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase font-mono tracking-wider flex items-center gap-2">
+            <Warehouse className="text-emerald-600 dark:text-emerald-400" size={16} />
             Godowns & Warehouses Directory
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Manage company godowns with AOL Branch mapping, GSTIN, physical address, dispatch locations, warehouse managers, and contact details.
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[11px] font-mono px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-semibold">
+          <span className="text-[11px] font-mono px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-lg font-semibold">
             Total: {aolGodowns.length} Godowns
           </span>
         </div>

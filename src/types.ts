@@ -606,14 +606,12 @@ export interface PiRecord {
   productRate4?: number; // "Product Rate 4"
   amount4?: number; // "Amount 4"
 
-  // Freight, TCS, Remarks & Totals (INR only)
+  // Freight, Remarks & Totals (INR only)
   freightCharges: number; // "Freight Charges"
-  tcsApplicableOrNot: string; // "TCS Applicable Or Not"
   deliveryNoteTerms: string; // "Terms of Delivery or Delivery Note"
   partyRemark: string; // "Any Note or Remark for the party"
   subTotal: number; // "Sub Total"
   gst: number; // "GST"
-  tcsAmount?: number; // "TCS Amount"
   totalInNum: number; // "Total (In Num)"
   amountInWord: string; // "Amount in Word"
 
